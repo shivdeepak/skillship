@@ -1,4 +1,6 @@
 import { Command } from "commander";
+import { createRequire } from "node:module";
+const { version } = createRequire(import.meta.url)("../package.json") as { version: string };
 import { validateCommand } from "./commands/validate.js";
 import { packageCommand } from "./commands/package.js";
 import { installCommand } from "./commands/install.js";
@@ -12,7 +14,7 @@ program
   .description(
     "Make any Agent Skill (SKILL.md) portable across Cursor, Claude Code, Claude Web, and Claude Cowork.",
   )
-  .version("1.0.0");
+  .version(version);
 
 program
   .command("validate")
