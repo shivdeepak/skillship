@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/shivdeepak/skillship/compare/skillship-v1.2.0...skillship-v1.2.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* collect repeated -a flags into array instead of overwriting ([6221fd5](https://github.com/shivdeepak/skillship/commit/6221fd5cbf86eea19b596fd536ab35faccc3e902))
+* read version from package.json instead of hardcoding ([a10a99d](https://github.com/shivdeepak/skillship/commit/a10a99db17aa08c872afc89312beac35368f3926))
+
 ## [1.2.0](https://github.com/shivdeepak/skillship/compare/skillship-v1.1.0...skillship-v1.2.0) (2026-06-15)
 
 
