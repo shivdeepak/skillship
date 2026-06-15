@@ -25,7 +25,7 @@ afterAll(async () => {
 
 describe("init", () => {
   it("scaffolds all files with the name substituted", async () => {
-    const code = await initCommand("demo", { ci: true, snippets: true });
+    const code = await initCommand("demo", { ci: true, snippets: true, newDir: true });
     expect(code).toBe(0);
 
     const root = join(process.cwd(), "demo");
@@ -67,7 +67,7 @@ describe("init", () => {
   });
 
   it("omits CI and snippets when flags are off", async () => {
-    const code = await initCommand("plain", {});
+    const code = await initCommand("plain", { newDir: true });
     expect(code).toBe(0);
     const root = join(process.cwd(), "plain");
     expect(existsSync(join(root, ".github"))).toBe(false);

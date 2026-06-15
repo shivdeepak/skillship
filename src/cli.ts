@@ -46,10 +46,11 @@ program
 
 program
   .command("init")
-  .description("Scaffold a new skill repo with release-please CI")
+  .description("Scaffold a skill into the current directory (or a new subdirectory with --new-dir)")
   .argument("[name]", "skill name")
   .option("--ci", "include GitHub Actions workflows")
-  .option("--snippets", "include cursor-rule.mdc and claude-md.md snippets")
+  .option("--snippets", "include cursor/rules/<name>.mdc and cursor/hooks.json (auto-installed by `skillship install`)")
+  .option("--new-dir", "create a new <name>/ project directory instead of using CWD")
   .action(async (name, opts) => {
     process.exit(await initCommand(name, opts));
   });

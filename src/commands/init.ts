@@ -6,6 +6,7 @@ import { existsSync } from "node:fs";
 export interface InitOptions {
   ci?: boolean;
   snippets?: boolean;
+  newDir?: boolean;
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -48,18 +49,24 @@ export async function initCommand(
     return 1;
   }
 
-  const root = resolve(process.cwd(), skillName);
-  if (existsSync(root)) {
+  // By default, scaffold into the current directory. With --new-dir, create
+  // a new project subdirectory named after the skill (legacy behaviour).
+  const root = options.newDir ? resolve(process.cwd(), skillName) : process.cwd();
+
+  if (options.newDir && existsSync(root)) {
     process.stderr.write(`Error: directory "${skillName}" already exists.\n`);
+    return 1;
+  }
+
+  const skillDir = join(root, skillName);
+  if (existsSync(skillDir)) {
+    process.stderr.write(`Error: skill directory "${skillName}" already exists.\n`);
     return 1;
   }
 
   const writes: Array<[string, string]> = [];
 
-  writes.push([
-    join(root, skillName, "SKILL.md"),
-    await renderTemplate("SKILL.md", skillName),
-  ]);
+  writes.push([join(skillDir, "SKILL.md"), await renderTemplate("SKILL.md", skillName)]);
   writes.push([join(root, "README.md"), await renderTemplate("README.md", skillName)]);
   writes.push([join(root, "AGENTS.md"), await renderTemplate("AGENTS.md", skillName)]);
   writes.push([
@@ -98,8 +105,9 @@ export async function initCommand(
     await emit(target, content);
   }
 
+  const hint = options.newDir ? `  cd ${skillName}\n` : "";
   process.stdout.write(`Scaffolded ${skillName}/ (${writes.length} files)\n`);
-  process.stdout.write(`  cd ${skillName}\n`);
+  process.stdout.write(hint);
   process.stdout.write(`  npx skillship validate ${skillName} --profile all\n`);
   return 0;
 }
