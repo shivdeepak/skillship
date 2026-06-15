@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/shivdeepak/skillship/compare/skillship-v1.0.2...skillship-v1.0.3) (2026-06-15)
+
+
+### Bug Fixes
+
+* **install:** correct hooks.json merge to use Cursor's event-keyed schema ([9521b1a](https://github.com/shivdeepak/skillship/commit/9521b1a8a08da8df9d2b44e0d1c5cc4138b9901e))
+
 ## [1.0.2](https://github.com/shivdeepak/skillship/compare/skillship-v1.0.1...skillship-v1.0.2) (2026-06-15)
 
 
