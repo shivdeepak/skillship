@@ -5,7 +5,15 @@ describe("buildSkillsAddArgv", () => {
   it("builds default argv", () => {
     expect(
       buildSkillsAddArgv({ dir: "/x/demo", agents: ["cursor", "claude-code"] }),
-    ).toEqual(["skills", "add", "/x/demo", "-a", "cursor,claude-code"]);
+    ).toEqual([
+      "skills",
+      "add",
+      "/x/demo",
+      "-a",
+      "cursor",
+      "-a",
+      "claude-code",
+    ]);
   });
 
   it("maps --global and --copy flags", () => {

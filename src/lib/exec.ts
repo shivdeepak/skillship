@@ -16,7 +16,7 @@ export function buildSkillsAddArgv(opts: {
   const argv = ["skills", "add", opts.dir];
   if (opts.global) argv.push("--global");
   if (opts.copy) argv.push("--copy");
-  if (opts.agents.length > 0) argv.push("-a", opts.agents.join(","));
+  for (const agent of opts.agents) argv.push("-a", agent);
   return argv;
 }
 
