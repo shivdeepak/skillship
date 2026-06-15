@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/shivdeepak/skillship/compare/skillship-v1.0.3...skillship-v1.1.0) (2026-06-15)
+
+
+### Features
+
+* add remote skill install from GitHub, GitLab, and any git source ([0ab93c7](https://github.com/shivdeepak/skillship/commit/0ab93c7bcf582df2de5acd5360df59a698274266))
+
 ## [1.0.3](https://github.com/shivdeepak/skillship/compare/skillship-v1.0.2...skillship-v1.0.3) (2026-06-15)
 
 
