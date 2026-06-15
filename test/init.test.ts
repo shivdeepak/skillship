@@ -38,8 +38,8 @@ describe("init", () => {
       "version.txt",
       ".github/workflows/validate.yml",
       ".github/workflows/release.yml",
-      "snippets/cursor-rule.mdc",
-      "snippets/claude-md.md",
+      "cursor/rules/demo.mdc",
+      "cursor/hooks.json",
     ];
     for (const f of expectedFiles) {
       expect(existsSync(join(root, f)), `missing ${f}`).toBe(true);
@@ -71,7 +71,7 @@ describe("init", () => {
     expect(code).toBe(0);
     const root = join(process.cwd(), "plain");
     expect(existsSync(join(root, ".github"))).toBe(false);
-    expect(existsSync(join(root, "snippets"))).toBe(false);
+    expect(existsSync(join(root, "cursor"))).toBe(false);
     expect(existsSync(join(root, "plain", "SKILL.md"))).toBe(true);
   });
 });

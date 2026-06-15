@@ -85,12 +85,12 @@ export async function initCommand(
 
   if (options.snippets) {
     writes.push([
-      join(root, "snippets", "cursor-rule.mdc"),
+      join(root, "cursor", "rules", `${skillName}.mdc`),
       await renderTemplate("cursor-rule.mdc", skillName),
     ]);
     writes.push([
-      join(root, "snippets", "claude-md.md"),
-      await renderTemplate("claude-md.md", skillName),
+      join(root, "cursor", "hooks.json"),
+      await renderTemplate("cursor-hooks.json", skillName),
     ]);
   }
 

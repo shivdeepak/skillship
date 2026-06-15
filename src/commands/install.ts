@@ -1,5 +1,15 @@
 import { loadSkill } from "../lib/load.js";
 import { buildSkillsAddArgv, isAvailable, run } from "../lib/exec.js";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
+import { join } from "node:path";
+import { homedir } from "node:os";
 
 export interface InstallOptions {
   agent?: string;
@@ -52,7 +62,90 @@ export async function installCommand(
   });
   process.stdout.write(`Running: npx ${argv.join(" ")}\n`);
   const code = await run("npx", argv);
+
+  if (code === 0 && filesystem.includes("cursor")) {
+    installCursorExtras(loaded.dir, options.global ?? false);
+  }
+
   return code;
+}
+
+/**
+ * Install agent-specific extras from the skill's `cursor/` directory.
+ *
+ * - `cursor/rules/*.mdc`  → copied to `<base>/rules/`
+ * - `cursor/hooks.json`   → entries merged (by name) into `<base>/hooks.json`
+ *
+ * `<base>` is `~/.cursor` for global installs, `.cursor` for project installs.
+ */
+function installCursorExtras(skillDir: string, global: boolean): void {
+  const base = global
+    ? join(homedir(), ".cursor")
+    : join(process.cwd(), ".cursor");
+
+  const rulesDir = join(skillDir, "cursor", "rules");
+  if (existsSync(rulesDir)) {
+    const destRules = join(base, "rules");
+    mkdirSync(destRules, { recursive: true });
+    for (const file of readdirSync(rulesDir)) {
+      const src = join(rulesDir, file);
+      const dest = join(destRules, file);
+      copyFileSync(src, dest);
+      process.stdout.write(`  Installed Cursor rule  → ${dest}\n`);
+    }
+  }
+
+  const hooksSrc = join(skillDir, "cursor", "hooks.json");
+  if (existsSync(hooksSrc)) {
+    mergeHooks(hooksSrc, join(base, "hooks.json"));
+  }
+}
+
+function mergeHooks(srcPath: string, destPath: string): void {
+  type HookEntry = Record<string, unknown>;
+  type HooksFile = { version?: number; hooks?: Record<string, HookEntry[]> };
+
+  let incoming: HooksFile = {};
+  try {
+    incoming = JSON.parse(readFileSync(srcPath, "utf8")) as HooksFile;
+  } catch {
+    process.stderr.write(`  Warning: could not parse ${srcPath}, skipping hooks merge.\n`);
+    return;
+  }
+
+  const incomingHooks = incoming.hooks ?? {};
+  if (Object.keys(incomingHooks).length === 0) return;
+
+  let existing: HooksFile = { version: 1, hooks: {} };
+  if (existsSync(destPath)) {
+    try {
+      existing = JSON.parse(readFileSync(destPath, "utf8")) as HooksFile;
+    } catch {
+      existing = { version: 1, hooks: {} };
+    }
+  }
+
+  const existingHooks: Record<string, HookEntry[]> = existing.hooks ?? {};
+  let added = 0;
+
+  for (const [event, entries] of Object.entries(incomingHooks)) {
+    const current = existingHooks[event] ?? [];
+    const existingCommands = new Set(current.map((h) => h.command));
+    const toAdd = entries.filter((h) => !existingCommands.has(h.command));
+    if (toAdd.length > 0) {
+      existingHooks[event] = [...current, ...toAdd];
+      added += toAdd.length;
+    }
+  }
+
+  if (added === 0) return;
+
+  mkdirSync(join(destPath, ".."), { recursive: true });
+  writeFileSync(
+    destPath,
+    JSON.stringify({ ...existing, hooks: existingHooks }, null, 2) + "\n",
+  );
+  process.stdout.write(`  Merged ${added} Cursor hook(s)  → ${destPath}\n`);
 }
 
 function printUploadInstructions(agents: string[], name: string): void {

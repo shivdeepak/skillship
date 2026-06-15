@@ -13,6 +13,9 @@ registry. It adds the three things the ecosystem is missing:
 2. **`.skill` packaging** for Claude Web / Cowork uploads.
 3. **`init` scaffolding** with reusable release-please CI and commit
    conventions.
+4. **Cursor rules and hooks install** — `install -a cursor` also copies
+   `cursor/rules/*.mdc` and merges `cursor/hooks.json` entries alongside the
+   `SKILL.md`.
 
 ## Install / usage
 
@@ -98,6 +101,18 @@ For filesystem agents, shells out to `npx skills add <dir> [--global] [--copy]
 -a <agents>`. Default agents are `cursor,claude-code`. For upload-only surfaces
 (`claude-web`, `claude-cowork`) it prints upload instructions instead.
 
+When installing for **Cursor**, two additional steps run automatically if the
+corresponding files exist inside the skill directory:
+
+- `cursor/rules/*.mdc` → copied to `~/.cursor/rules/` (global) or
+  `.cursor/rules/` (project)
+- `cursor/hooks.json` → entries merged by event key and `command` into
+  `~/.cursor/hooks.json` or
+  `.cursor/hooks.json`
+
+This means `skillship install` is a one-step command: it installs the skill,
+its trigger rule, and any hooks without requiring manual file copying.
+
 ### init
 
 ```bash
@@ -107,17 +122,18 @@ skillship init demo --ci --snippets
 Scaffolds a skill repo (see layout below) that auto-releases via
 [release-please](https://github.com/googleapis/release-please-action) +
 [Conventional Commits](https://www.conventionalcommits.org/). `--ci` adds the
-GitHub Actions workflows; `--snippets` adds `cursor-rule.mdc` and
-`claude-md.md`.
+GitHub Actions workflows; `--snippets` adds a Cursor rule and hooks file that
+`skillship install` will automatically deploy.
 
 Scaffolded layout:
 
 ```
 my-skill/
   my-skill/SKILL.md
-  snippets/                 # if --snippets
-    cursor-rule.mdc
-    claude-md.md
+  cursor/                   # if --snippets
+    rules/
+      my-skill.mdc          # Cursor trigger rule (auto-installed)
+    hooks.json              # Cursor hooks to merge (auto-installed)
   release-please-config.json
   .release-please-manifest.json
   version.txt

@@ -6,6 +6,10 @@ Claude Code, Claude Web, and Claude Cowork.
 ## Layout
 
 - `{{name}}/SKILL.md` — the skill itself (source of truth).
+- `cursor/rules/{{name}}.mdc` — Cursor rule; auto-installed by `skillship
+  install -a cursor`.
+- `cursor/hooks.json` — Cursor hook entries; merged into `~/.cursor/hooks.json`
+  on install.
 - `release-please-config.json`, `.release-please-manifest.json`, `version.txt` —
   release automation via release-please + Conventional Commits.
 - `.github/workflows/validate.yml` — validates the skill on PRs/pushes.
