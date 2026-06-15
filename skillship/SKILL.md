@@ -67,12 +67,19 @@ Ask the user where to publish (use AskQuestion). Targets:
 convention that skillship wraps:
 
 ```bash
+# Local directory
 npx skillship install <dir> -a cursor,claude-code
-# equivalently: npx skills add <dir> -a cursor,claude-code
+
+# Remote — GitHub shorthand, GitLab URL, SSH URL, or any git-clonable ref
+npx skillship install owner/repo -a cursor,claude-code
+npx skillship install owner/repo@skill-name          # filter by skill name
+npx skillship install https://gitlab.com/org/repo/-/tree/main/skills/my-skill
+npx skillship install git@github.com:org/repo.git
 ```
 
-Add `--global` to install for all projects, `--copy` to copy instead of
-symlink.
+Remote sources are cloned (`git clone --depth 1`) to a temp directory; `git`
+must be on PATH. Add `--global` to install for all projects, `--copy` to copy
+instead of symlink.
 
 **Upload-only surfaces** (e.g. Claude Web / Cowork):
 

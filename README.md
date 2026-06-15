@@ -46,15 +46,18 @@ npx skillship <command>
 ## Commands
 
 ```
-skillship validate <dir> [--profile <p>] [--json]
-skillship package  <dir> [--out <dir>]
-skillship install  <dir> [--agent <a,b>] [--global] [--copy]
-skillship init     [name] [--ci] [--snippets]
+skillship validate <dir>    [--profile <p>] [--json]
+skillship package  <dir>    [--out <dir>]
+skillship install  [source] [-a <a,b>] [--global] [--copy]
+skillship init     [name]   [--ci] [--snippets]
 skillship doctor
 ```
 
-`<dir>` defaults to `.` and must contain a `SKILL.md`. Validation exits non-zero
-on failure.
+`<source>` for `install` is a local path (default `.`) **or** any remote ref
+supported by `npx skills add`: `owner/repo`, `owner/repo@skill-name`, a full
+GitHub/GitLab URL, or an SSH git URL. For `validate` and `package`, `<dir>`
+defaults to `.` and must contain a `SKILL.md`. All commands exit non-zero on
+failure.
 
 ### validate
 
@@ -94,8 +97,30 @@ Excludes `__pycache__/`, `.DS_Store`, `node_modules/`, `dist/`, `.git/`.
 ### install
 
 ```bash
+# Local directory (existing behaviour)
 skillship install ./my-skill -a cursor,claude-code
+
+# GitHub shorthand — clones and installs in one step
+npx skillship install shivdeepak/knowledge-base-builder -a cursor,claude-code
+
+# GitHub shorthand with skill-name filter (multi-skill repos)
+npx skillship install vercel-labs/agent-skills@frontend-design
+
+# Subpath inside a repo
+npx skillship install org/monorepo/packages/my-skill
+
+# Full GitHub or GitLab URL (with optional branch/path)
+npx skillship install https://github.com/org/repo/tree/main/skills/my-skill
+npx skillship install https://gitlab.com/org/repo/-/tree/main/skills/my-skill
+
+# Any git URL (SSH, self-hosted, etc.)
+npx skillship install git@github.com:org/repo.git
+npx skillship install git@git.company.com:team/skills.git
 ```
+
+For remote sources, skillship runs `git clone --depth 1` into a temp directory,
+locates the `SKILL.md`, installs from there, then cleans up. `git` must be
+available on `PATH` — run `skillship doctor` to check.
 
 For filesystem agents, shells out to `npx skills add <dir> [--global] [--copy]
 -a <agents>`. Default agents are `cursor,claude-code`. For upload-only surfaces
@@ -181,6 +206,7 @@ src/
   lib/zip.ts              # .skill packaging (archiver)
   lib/exec.ts             # spawn wrappers for npx skills / gh / agentskills
   lib/load.ts             # SKILL.md loader
+  lib/remote.ts           # remote ref detection, URL parsing, git clone + skill dir resolution
 templates/                # CI + snippet + AGENTS/README/SKILL templates for init
 skillship/                # bundled Agent Skill (the /skillship skill)
 test/                     # vitest specs + fixtures
