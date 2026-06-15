@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.2](https://github.com/shivdeepak/skillship/compare/skillship-v1.2.1...skillship-v1.2.2) (2026-06-15)
+
+
+### Bug Fixes
+
+* forward agents as repeated -a flags to skills CLI ([a0090f2](https://github.com/shivdeepak/skillship/commit/a0090f2dba748e96d2261a4514facc6231144cd0))
+
+
+### Documentation
+
+* align spec, README, and templates with cursor/ snippet layout ([34274b7](https://github.com/shivdeepak/skillship/commit/34274b719868a67072cd3e460e8e6d95178ad99b))
+
 ## [1.2.1](https://github.com/shivdeepak/skillship/compare/skillship-v1.2.0...skillship-v1.2.1) (2026-06-15)
 
 
