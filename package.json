@@ -1,0 +1,46 @@
+{
+  "name": "skillship",
+  "version": "1.0.0",
+  "description": "Make any Agent Skill (SKILL.md) portable across Cursor, Claude Code, Claude Web, and Claude Cowork.",
+  "type": "module",
+  "bin": {
+    "skillship": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "agent-skills",
+    "skill",
+    "cursor",
+    "claude",
+    "cli"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/archiver": "^6.0.3",
+    "@types/node": "^22.10.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "yauzl": "^3.2.0",
+    "@types/yauzl": "^2.10.3"
+  }
+}

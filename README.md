@@ -1,0 +1,156 @@
+# skillship
+
+Make any [Agent Skill](https://agentskills.io/specification) (a `SKILL.md`
+directory) portable across **Cursor**, **Claude Code**, **Claude Web**, and
+**Claude Cowork**.
+
+`skillship` is a thin orchestration layer. It does **not** reimplement the
+multi-agent install matrix (that's [`npx skills`](https://skills.sh)) or host a
+registry. It adds the three things the ecosystem is missing:
+
+1. Strict, per-surface **validation profiles** (notably Claude's 200-char upload
+   cap, which the official validator doesn't enforce).
+2. **`.skill` packaging** for Claude Web / Cowork uploads.
+3. **`init` scaffolding** with reusable release-please CI and commit
+   conventions.
+
+## Install / usage
+
+```bash
+npx skillship <command>
+```
+
+Requires Node.js >= 18.
+
+## Commands
+
+```
+skillship validate <dir> [--profile <p>] [--json]
+skillship package  <dir> [--out <dir>]
+skillship install  <dir> [--agent <a,b>] [--global] [--copy]
+skillship init     [name] [--ci] [--snippets]
+skillship doctor
+```
+
+`<dir>` defaults to `.` and must contain a `SKILL.md`. Validation exits non-zero
+on failure.
+
+### validate
+
+Parses the `SKILL.md` YAML frontmatter (`name`, `description`, optional
+`license`, `metadata`, `allowed-tools`) and body, then applies checks per
+profile:
+
+| Check | spec | cursor | claude-web | claude-cowork |
+| --- | --- | --- | --- | --- |
+| `name` present, lowercase/numbers/hyphens | yes | yes | yes | yes |
+| `name` matches parent folder | yes | yes | yes | yes |
+| `description` non-empty, no `<`/`>` | yes | yes | yes | yes |
+| `description` length | <= 1024 | <= 1024 | **<= 200** | **<= 200** |
+| Body recommended <= 500 lines | warn | warn | warn | warn |
+
+`--profile` is one of `spec | cursor | claude-web | claude-cowork | all`
+(default `all`, the strictest combination — description must be <= 200 chars).
+`--json` emits machine-readable output for CI.
+
+The frontmatter parser handles YAML block scalars (`>`, `>-`, `>+`, `|`, `|-`,
+`|+`) and nested maps (e.g. `metadata:` with indented children) without
+mis-joining keys. If `agentskills` (the Python spec validator) is on `PATH`, its
+findings are merged in; it is never a hard dependency.
+
+### package
+
+```bash
+skillship package ./my-skill            # -> dist/my-skill.skill
+skillship package ./my-skill --out out  # -> out/my-skill.skill
+```
+
+Runs `validate --profile all` first (aborts on failure), then produces a
+`<name>.skill` zip whose **archive root is the skill folder** (entries are
+`<name>/SKILL.md`, ...) — Claude rejects archives with files at the zip root.
+Excludes `__pycache__/`, `.DS_Store`, `node_modules/`, `dist/`, `.git/`.
+
+### install
+
+```bash
+skillship install ./my-skill -a cursor,claude-code
+```
+
+For filesystem agents, shells out to `npx skills add <dir> [--global] [--copy]
+-a <agents>`. Default agents are `cursor,claude-code`. For upload-only surfaces
+(`claude-web`, `claude-cowork`) it prints upload instructions instead.
+
+### init
+
+```bash
+skillship init demo --ci --snippets
+```
+
+Scaffolds a skill repo (see layout below) that auto-releases via
+[release-please](https://github.com/googleapis/release-please-action) +
+[Conventional Commits](https://www.conventionalcommits.org/). `--ci` adds the
+GitHub Actions workflows; `--snippets` adds `cursor-rule.mdc` and
+`claude-md.md`.
+
+Scaffolded layout:
+
+```
+my-skill/
+  my-skill/SKILL.md
+  snippets/                 # if --snippets
+    cursor-rule.mdc
+    claude-md.md
+  release-please-config.json
+  .release-please-manifest.json
+  version.txt
+  .github/workflows/{validate,release}.yml
+  AGENTS.md
+  README.md
+```
+
+> After pushing the scaffolded repo, enable **Settings -> Actions -> Workflow
+> permissions**: "Read and write" and "Allow GitHub Actions to create and
+> approve pull requests" so release-please can open release PRs and upload the
+> `.skill` asset.
+
+The `SKILL.md` version line uses an inline marker so release-please updates it
+in
+place and the validator ignores it:
+
+```yaml
+metadata:
+  version: "1.0.0" # x-release-please-version
+```
+
+### doctor
+
+Checks the local environment: Node >= 18 and `npx` (required), plus `gh` and
+`agentskills` (optional).
+
+## Development
+
+```bash
+npm install
+npm run build   # tsup -> dist/cli.js
+npm run lint    # tsc --noEmit
+npm test        # vitest
+```
+
+Project layout:
+
+```
+src/
+  cli.ts                  # arg parsing, command dispatch (commander)
+  commands/{validate,package,install,init,doctor}.ts
+  lib/frontmatter.ts      # YAML frontmatter parser (block scalars + maps)
+  lib/profiles.ts         # profile definitions and checks
+  lib/zip.ts              # .skill packaging (archiver)
+  lib/exec.ts             # spawn wrappers for npx skills / gh / agentskills
+  lib/load.ts             # SKILL.md loader
+templates/                # CI + snippet + AGENTS/README/SKILL templates for init
+test/                     # vitest specs + fixtures
+```
+
+## License
+
+MIT

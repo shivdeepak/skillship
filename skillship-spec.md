@@ -1,0 +1,252 @@
+# skillship — Build Brief
+
+> This is a self-contained specification. A fresh agent session with no prior
+> context should be able to scaffold the `skillship` project from this file
+> alone. Build it as a **new standalone repository**,
+
+## 1. Purpose and non-goals
+
+`skillship` is a small Node/TypeScript CLI that makes any
+[Agent Skill](https://agentskills.io/specification) (a `SKILL.md` directory)
+portable across **Cursor**, **Claude Code**, **Claude Web**, and **Claude
+Cowork**.
+
+It exists to fill the gaps that the existing ecosystem leaves open:
+
+- `npx skills` (vercel-labs, ~22k stars, `skills.sh`) already solves *filesystem
+  install* across 70+ agents. `skillship` MUST delegate to it, not reimplement
+  it.
+- `skills-ref` / `agentskills` (Python) is the official spec validator but is
+  explicitly "for demonstration only, not production," and only checks the spec
+  limit (1024-char description). It does NOT enforce the stricter Claude
+  upload limit (200 chars), `.skill` packaging, or release automation.
+
+So `skillship` is a **thin orchestration layer** that adds:
+
+1. Strict, per-surface **validation profiles** (notably the 200-char upload
+   cap).
+2. **`.skill` packaging** for Claude Web / Cowork uploads.
+3. **`init` scaffolding** with reusable release-please CI and commit
+   conventions.
+
+Non-goals (do NOT build these):
+
+- Do not reimplement the multi-agent install matrix; shell out to `npx skills`.
+- Do not host a skill registry; that is `skills.sh`.
+- Do not implement Claude API `/v1/skills` uploads.
+
+## 2. Runtime and distribution
+
+- Language: **TypeScript**, compiled to Node (ESM, Node >= 18).
+- Distribution: published to npm as **`skillship`**; primary usage `npx
+  skillship <cmd>`.
+- Single binary named `skillship` (via `package.json` `bin`).
+
+Name note: `skillkit` was already taken on npm by an active competitor;
+`skillship` is the chosen free, on-theme name (package and ship skills
+everywhere). Publish both package and bin as `skillship`.
+
+```mermaid
+flowchart TB
+  CLI["skillship (npx)"] --> Validate["validate (profiles)"]
+  CLI --> Package["package (.skill zip)"]
+  CLI --> Install["install (delegates)"]
+  CLI --> Init["init (scaffold + CI)"]
+  CLI --> Doctor["doctor (env checks)"]
+  Install --> NpxSkills["npx skills add ..."]
+  Package --> Upload["Claude Web / Cowork upload"]
+  Validate -->|"optional"| Ref["agentskills / skills-ref"]
+```
+
+## 3. CLI surface
+
+```
+skillship validate <dir> [--profile <p>] [--json]
+skillship package  <dir> [--out <dir>]
+skillship install  <dir> [--agent <a,b>] [--global] [--copy]
+skillship init     [name] [--ci] [--snippets]
+skillship doctor
+```
+
+- `<dir>` defaults to `.` and must contain `SKILL.md`.
+- `--profile`: one of `spec | claude-web | claude-cowork | cursor | all`
+(default `all`, the strictest combination).
+- `--json`: machine-readable output for CI.
+- Exit non-zero on any validation failure.
+
+## 4. Validation profiles
+
+Parse the `SKILL.md` YAML frontmatter (`name`, `description`, optional
+`license`,
+`metadata`, `allowed-tools`) and the markdown body. Apply checks per profile:
+
+| Check | spec | cursor | claude-web | claude-cowork |
+| --- | --- | --- | --- | --- |
+| `name` present, lowercase/numbers/hyphens, no leading/trailing/`--` | yes | yes | yes | yes |
+| `name` matches parent folder | yes | yes | yes | yes |
+| `description` non-empty, no `<`/`>` (XML) | yes | yes | yes | yes |
+| `description` length | <= 1024 | <= 1024 | **<= 200** | **<= 200** |
+| Body recommended <= 500 lines | warn | warn | warn | warn |
+| Packaged zip root is `<name>/SKILL.md` | n/a | n/a | yes | yes |
+
+- `--profile all` runs every check; description must satisfy the **200-char**
+  minimum-common-denominator to pass.
+- Frontmatter parser MUST handle YAML block scalars (`>`, `>-`, `>+`, `|`, `|-`,
+  `|+`) and nested maps (e.g. `metadata:` with indented children) without
+mis-joining. (This was a real bug in the origin `validate.py` — handle it.)
+- If `agentskills` (Python) is available on PATH, optionally run
+  `agentskills validate <dir>` and merge its findings; never hard-depend on it.
+
+## 5. Packaging contract
+
+`skillship package <dir>`:
+
+1. Run `validate <dir> --profile all` first; abort on failure.
+2. Produce `<out>/<name>.skill` (default `<out>` = `dist/`), a zip where the
+   **archive root is the skill folder** — i.e. entries are `<name>/SKILL.md`,
+   `<name>/...`. Claude upload rejects archives with files at the zip root.
+3. Exclude `__pycache__/`, `.DS_Store`, `node_modules/`, `dist/`, `.git/`.
+4. The `.skill` file is a normal zip with a renamed extension.
+
+Use `archiver` (or `yazl`) for deterministic zip creation. Add a test that
+unzips the output and asserts the first path segment equals `<name>`.
+
+## 6. Install behavior
+
+`skillship install <dir>`:
+
+- For filesystem agents (Cursor, Claude Code, etc.), shell out to the ecosystem
+  tool rather than copying by hand:
+  ```
+  npx skills add <dir> [--global] [--copy] -a <agent...>
+  ```
+Default agents when `--agent` omitted: `cursor,claude-code`. Map `--global` to
+`npx skills` global flag and `--copy` to its copy flag.
+- For upload-only surfaces (Claude Web, Claude Cowork), there is no filesystem
+  install. Print clear instructions instead:
+  - "Run `skillship package <dir>` then upload `dist/<name>.skill`."
+  - Claude Web: Settings -> Capabilities -> Upload skill -> enable toggle.
+  - Claude Cowork: Customize -> Skills -> Upload (desktop app only).
+- If `npx`/`skills` is unavailable, fail with a helpful message (see `doctor`).
+
+## 7. CI templates (emitted by `init --ci`)
+
+`init` scaffolds a skill repo that auto-releases via
+[release-please](https://github.com/googleapis/release-please-action) using
+[Conventional Commits](https://www.conventionalcommits.org/). Emit these files,
+parameterized by skill `name`:
+
+- `release-please-config.json` — manifest config, `release-type: simple`,
+  changelog sections (`feat`/`fix`/`perf`/`docs`/`refactor`; `ci`/`chore`
+  hidden), and an `extra-files` `generic` updater targeting `<name>/SKILL.md`.
+- `.release-please-manifest.json` — `{ ".": "1.0.0" }`.
+- `version.txt` — `1.0.0`.
+- `.github/workflows/validate.yml` — on `pull_request` + `push`, runs
+  `npx skillship validate <name>`.
+- `.github/workflows/release.yml` — on `push` to `main`: run
+  `googleapis/release-please-action@v4`; then, gated on
+  `steps.release.outputs.release_created`, check out, `npx skillship package
+  <name>`, and `gh release upload "<tag>" dist/<name>.skill --clobber`.
+Needs `permissions: contents: write, pull-requests: write`.
+
+`SKILL.md` version marker convention: the version line carries an inline
+comment so release-please updates it in place and the validator ignores it:
+
+```yaml
+metadata:
+  version: "1.0.0" # x-release-please-version
+```
+
+Document that the repo must enable Settings -> Actions -> Workflow permissions:
+"Read and write" + "Allow GitHub Actions to create and approve pull requests".
+
+## 8. Repo layouts
+
+A consumer skill repo scaffolded by `init`:
+
+```
+my-skill/
+  my-skill/SKILL.md
+  snippets/                 # if --snippets
+    cursor-rule.mdc
+    claude-md.md
+  release-please-config.json
+  .release-please-manifest.json
+  version.txt
+  .github/workflows/{validate,release}.yml
+  AGENTS.md
+  README.md
+```
+
+The `skillship` project itself:
+
+```
+skillship/
+  package.json              # bin: { "skillship": "dist/cli.js" }, type: module
+  tsconfig.json
+  src/
+    cli.ts                  # arg parsing, command dispatch
+    commands/{validate,package,install,init,doctor}.ts
+    lib/frontmatter.ts      # YAML frontmatter parser (block scalars + maps)
+    lib/profiles.ts         # profile definitions and checks
+    lib/zip.ts              # .skill packaging
+    lib/exec.ts             # spawn wrapper for `npx skills`, `gh`, `agentskills`
+  templates/                # CI + snippet + AGENTS templates for `init`
+    release-please-config.json
+    release.yml
+    validate.yml
+    cursor-rule.mdc
+    claude-md.md
+    AGENTS.md
+  test/
+    fixtures/
+    *.test.ts
+  README.md
+```
+
+## 9. Project setup
+
+- `package.json`: `"type": "module"`, `"bin": { "skillship": "dist/cli.js" }`,
+  `"engines": { "node": ">=18" }`, scripts for `build`, `test`, `lint`.
+- Build with `tsup` (or `tsc`) to `dist/`.
+- Arg parsing: `commander`.
+- Zip: `archiver`.
+- Tests: `vitest`.
+- Keep runtime deps minimal; everything heavy (`npx skills`, `gh`,
+  `agentskills`) is invoked as a subprocess, not bundled.
+
+## 10. Testing
+
+Provide `test/fixtures/`:
+
+- `valid-skill/` — passes `--profile all`.
+- `long-description/` — description > 200 chars: fails
+  `claude-web`/`claude-cowork`
+  and `all`, passes `spec`.
+- `name-mismatch/` — `name` != folder: fails every profile.
+- `block-scalar/` — uses `description: >-` and nested `metadata:` to prove the
+  parser handles both.
+
+Required tests:
+
+- Each fixture yields the expected pass/fail set per profile.
+- `package` output unzips with `<name>/SKILL.md` at the root and excludes junk.
+- `install` builds the correct `npx skills add ...` argv (mock `exec`).
+- `init` writes all expected files with the skill name substituted.
+
+## 11. Acceptance criteria
+
+- `npx skillship validate ./my-skill --profile all` exits 0 for a valid skill,
+  non-zero with clear messages otherwise.
+- `npx skillship package ./my-skill` yields `dist/my-skill.skill` that uploads
+  cleanly to Claude Web and Cowork.
+- `npx skillship install ./my-skill -a cursor,claude-code` installs via
+  `npx skills`.
+- `npx skillship init demo --ci --snippets` scaffolds a repo whose CI, on a
+  merged release PR, publishes `demo.skill` to a GitHub Release.
+
+## 12. Out of scope
+
+- Skill registry/discovery hosting (use `skills.sh`).
+- Reimplementing `npx skills` install internals.
+- Claude API `/v1/skills` programmatic upload.

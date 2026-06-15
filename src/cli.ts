@@ -1,0 +1,67 @@
+import { Command } from "commander";
+import { validateCommand } from "./commands/validate.js";
+import { packageCommand } from "./commands/package.js";
+import { installCommand } from "./commands/install.js";
+import { initCommand } from "./commands/init.js";
+import { doctorCommand } from "./commands/doctor.js";
+
+const program = new Command();
+
+program
+  .name("skillship")
+  .description(
+    "Make any Agent Skill (SKILL.md) portable across Cursor, Claude Code, Claude Web, and Claude Cowork.",
+  )
+  .version("1.0.0");
+
+program
+  .command("validate")
+  .description("Validate a SKILL.md against per-surface profiles")
+  .argument("[dir]", "skill directory", ".")
+  .option("--profile <p>", "spec | cursor | claude-web | claude-cowork | all", "all")
+  .option("--json", "machine-readable output")
+  .action(async (dir, opts) => {
+    process.exit(await validateCommand(dir, opts));
+  });
+
+program
+  .command("package")
+  .description("Validate then build a .skill zip for Claude upload")
+  .argument("[dir]", "skill directory", ".")
+  .option("--out <dir>", "output directory", "dist")
+  .action(async (dir, opts) => {
+    process.exit(await packageCommand(dir, opts));
+  });
+
+program
+  .command("install")
+  .description("Install a skill via `npx skills`, or print upload instructions")
+  .argument("[dir]", "skill directory", ".")
+  .option("--agent <a,b>", "comma-separated agents")
+  .option("--global", "install globally")
+  .option("--copy", "copy instead of symlink")
+  .action(async (dir, opts) => {
+    process.exit(await installCommand(dir, opts));
+  });
+
+program
+  .command("init")
+  .description("Scaffold a new skill repo with release-please CI")
+  .argument("[name]", "skill name")
+  .option("--ci", "include GitHub Actions workflows")
+  .option("--snippets", "include cursor-rule.mdc and claude-md.md snippets")
+  .action(async (name, opts) => {
+    process.exit(await initCommand(name, opts));
+  });
+
+program
+  .command("doctor")
+  .description("Check the local environment for required/optional tools")
+  .action(async () => {
+    process.exit(await doctorCommand());
+  });
+
+program.parseAsync(process.argv).catch((err) => {
+  process.stderr.write(`${err instanceof Error ? err.stack : String(err)}\n`);
+  process.exit(1);
+});

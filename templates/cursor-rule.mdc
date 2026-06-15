@@ -1,0 +1,11 @@
+---
+description: {{name}} skill guidance
+alwaysApply: false
+---
+
+# {{name}}
+
+This rule points the agent at the `{{name}}` Agent Skill.
+
+Read `{{name}}/SKILL.md` and follow its instructions when the task matches the
+skill's description.
