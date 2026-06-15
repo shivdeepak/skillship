@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Make any Agent Skill (SKILL.md) portable across Cursor, Claude Code, Claude Web, and Claude Cowork.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shivdeepak/skillship.git"
+  },
   "bin": {
     "skillship": "dist/cli.js"
   },

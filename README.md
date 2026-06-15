@@ -167,6 +167,38 @@ skillship/                # bundled Agent Skill (the /skillship skill)
 test/                     # vitest specs + fixtures
 ```
 
+## Releases
+
+Releases are automated via
+[release-please](https://github.com/googleapis/release-please-action) +
+[Conventional Commits](https://www.conventionalcommits.org/). On every push to
+`main`, release-please opens/updates a release PR that bumps the version in
+`package.json` and the `CHANGELOG.md` based on the commits since the last
+release (`feat:` -> minor, `fix:`/`perf:` -> patch, `feat!:`/`BREAKING CHANGE`
+-> major). Merging that PR tags the release and triggers `npm publish` from
+`.github/workflows/release.yml`. `chore:`/`ci:` commits do not trigger a
+release.
+
+Publishing uses **npm trusted publishing (OIDC)** — no `NPM_TOKEN` secret. The
+workflow requests a short-lived OIDC token (`id-token: write`) that npm verifies
+against the trusted-publisher config; provenance attestations are generated
+automatically.
+
+`.github/workflows/ci.yml` runs lint + test + build on every push and PR.
+
+One-time setup:
+
+1. Enable **Settings -> Actions -> General -> Workflow permissions**: "Read and
+   write" and "Allow GitHub Actions to create and approve pull requests" so
+   release-please can open release PRs.
+2. Publish `1.0.0` once manually (`npm publish --access public`) — trusted
+   publishing can only be configured for a package that already exists.
+3. On npmjs.com, open the package's **Access** page and add a **Trusted
+   Publisher** for GitHub Actions, matching repo `shivdeepak/skillship` and
+   workflow file `release.yml` exactly. After that, every release publishes
+   tokenlessly. Optionally set the package to "require 2FA and disallow tokens"
+   so only the workflow can publish.
+
 ## License
 
 MIT
