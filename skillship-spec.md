@@ -61,14 +61,20 @@ flowchart TB
 ## 3. CLI surface
 
 ```
-skillship validate <dir> [--profile <p>] [--json]
-skillship package  <dir> [--out <dir>]
-skillship install  <dir> [--agent <a,b>] [--global] [--copy]
-skillship init     [name] [--ci] [--snippets]
+skillship validate <dir>    [--profile <p>] [--json]
+skillship package  <dir>    [--out <dir>]
+skillship install  [source] [--agent <a,b>] [--global] [--copy]
+skillship init     [name]   [--ci] [--snippets] [--new-dir]
 skillship doctor
 ```
 
 - `<dir>` defaults to `.` and must contain `SKILL.md`.
+- `install`'s `[source]` is a local path (default `.`) **or** a remote ref
+  (`owner/repo`, `owner/repo@skill-name`, a GitHub/GitLab URL, or any git URL);
+  remote refs are `git clone --depth 1`'d to a temp dir, installed, then
+  removed.
+- `init` scaffolds into the current directory by default; `--new-dir` creates a
+  new `<name>/` project directory instead.
 - `--profile`: one of `spec | claude-web | claude-cowork | cursor | all`
 (default `all`, the strictest combination).
 - `--json`: machine-readable output for CI.
@@ -113,8 +119,13 @@ unzips the output and asserts the first path segment equals `<name>`.
 
 ## 6. Install behavior
 
-`skillship install <dir>`:
+`skillship install [source]`:
 
+- `source` may be a local directory or a remote ref. Remote refs (`owner/repo`,
+  `owner/repo@skill-name`, GitHub/GitLab URLs, or any git URL) are cloned
+  shallow
+  to a temp directory, installed from there, then cleaned up. `git` must be on
+  PATH.
 - For filesystem agents (Cursor, Claude Code, etc.), shell out to the ecosystem
   tool rather than copying by hand:
   ```
@@ -122,6 +133,11 @@ unzips the output and asserts the first path segment equals `<name>`.
   ```
 Default agents when `--agent` omitted: `cursor,claude-code`. Map `--global` to
 `npx skills` global flag and `--copy` to its copy flag.
+- When installing for `cursor`, also deploy the skill's Cursor extras if
+  present:
+  copy `cursor/rules/*.mdc` into `~/.cursor/rules/` (global) or `.cursor/rules/`
+  (project), and merge `cursor/hooks.json` entries (by event key + `command`)
+  into the corresponding `hooks.json`.
 - For upload-only surfaces (Claude Web, Claude Cowork), there is no filesystem
   install. Print clear instructions instead:
   - "Run `skillship package <dir>` then upload `dist/<name>.skill`."
@@ -167,9 +183,9 @@ A consumer skill repo scaffolded by `init`:
 ```
 my-skill/
   my-skill/SKILL.md
-  snippets/                 # if --snippets
-    cursor-rule.mdc
-    claude-md.md
+  cursor/                   # if --snippets
+    rules/my-skill.mdc      # Cursor trigger rule (auto-installed by install -a cursor)
+    hooks.json              # Cursor hooks merged into ~/.cursor/hooks.json on install
   release-please-config.json
   .release-please-manifest.json
   version.txt
@@ -191,13 +207,19 @@ skillship/
     lib/profiles.ts         # profile definitions and checks
     lib/zip.ts              # .skill packaging
     lib/exec.ts             # spawn wrapper for `npx skills`, `gh`, `agentskills`
-  templates/                # CI + snippet + AGENTS templates for `init`
+    lib/load.ts             # SKILL.md loader
+    lib/remote.ts           # remote ref detection + git clone resolution
+  templates/                # CI + snippet + AGENTS/README/SKILL templates for `init`
     release-please-config.json
     release.yml
     validate.yml
     cursor-rule.mdc
-    claude-md.md
+    cursor-hooks.json
     AGENTS.md
+    README.md
+    SKILL.md
+  skillship/                # bundled Agent Skill (the /skillship skill)
+    SKILL.md
   test/
     fixtures/
     *.test.ts

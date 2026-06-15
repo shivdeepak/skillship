@@ -49,7 +49,7 @@ npx skillship <command>
 skillship validate <dir>    [--profile <p>] [--json]
 skillship package  <dir>    [--out <dir>]
 skillship install  [source] [-a <a,b>] [--global] [--copy]
-skillship init     [name]   [--ci] [--snippets]
+skillship init     [name]   [--ci] [--snippets] [--new-dir]
 skillship doctor
 ```
 
@@ -149,6 +149,10 @@ Scaffolds a skill repo (see layout below) that auto-releases via
 [Conventional Commits](https://www.conventionalcommits.org/). `--ci` adds the
 GitHub Actions workflows; `--snippets` adds a Cursor rule and hooks file that
 `skillship install` will automatically deploy.
+
+By default `init` scaffolds **into the current directory** (the skill body goes
+in `<name>/SKILL.md`, repo files at the root). Pass `--new-dir` to create a new
+`<name>/` project directory instead. The layout below is relative to that root.
 
 Scaffolded layout:
 
