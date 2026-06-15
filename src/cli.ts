@@ -37,7 +37,7 @@ program
   .command("install")
   .description("Install a skill via `npx skills`, or print upload instructions")
   .argument("[source]", "local skill directory or remote ref (owner/repo, URL, git@...)", ".")
-  .option("-a, --agent <a,b>", "comma-separated agents")
+  .option("-a, --agent <agent>", "target agent (repeatable: -a cursor -a claude-code)", (val: string, prev: string[]) => [...prev, val], [] as string[])
   .option("--global", "install globally")
   .option("--copy", "copy instead of symlink")
   .action(async (dir, opts) => {

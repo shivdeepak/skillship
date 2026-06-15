@@ -13,7 +13,7 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 
 export interface InstallOptions {
-  agent?: string;
+  agent?: string | string[];
   global?: boolean;
   copy?: boolean;
 }
@@ -53,8 +53,10 @@ export async function installCommand(
   }
 
   try {
-    const requested = options.agent
-      ? options.agent.split(",").map((a) => a.trim()).filter(Boolean)
+    const requested = options.agent && (Array.isArray(options.agent) ? options.agent.length > 0 : true)
+      ? (Array.isArray(options.agent)
+          ? options.agent.flatMap((a) => a.split(",")).map((a) => a.trim()).filter(Boolean)
+          : options.agent.split(",").map((a) => a.trim()).filter(Boolean))
       : DEFAULT_AGENTS;
 
     const uploadOnly = requested.filter((a) => UPLOAD_ONLY.has(a));
