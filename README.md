@@ -16,6 +16,12 @@ registry. It adds the three things the ecosystem is missing:
 
 ## Install / usage
 
+Both commands below use `npx`, which ships with [Node.js](https://nodejs.org)
+(>= 18). If `npx` is not found, install Node.js first — e.g. download the LTS
+installer from [nodejs.org](https://nodejs.org), or use a version manager
+(`brew install node`, `nvm install --lts`, `winget install OpenJS.NodeJS.LTS`).
+Verify with `node -v` and `npx -v`.
+
 **Recommended:** install the bundled `/skillship` Agent Skill straight from
 GitHub. It drives the CLI for you — invoke `/skillship` (or ask to publish a
 skill) and the agent locates/scaffolds a `SKILL.md`, validates it, fixes issues,
