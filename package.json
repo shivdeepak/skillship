@@ -9,6 +9,7 @@
   "files": [
     "dist",
     "templates",
+    "skillship",
     "README.md"
   ],
   "engines": {

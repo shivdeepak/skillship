@@ -127,6 +127,21 @@ metadata:
 Checks the local environment: Node >= 18 and `npx` (required), plus `gh` and
 `agentskills` (optional).
 
+## Bundled skill (`/skillship`)
+
+skillship ships with its own Agent Skill at `skillship/SKILL.md`. Installed into
+any agent, it drives the CLI for you: invoke `/skillship` (or ask to publish a
+skill) and the agent locates/scaffolds the `SKILL.md`, validates it, fixes
+issues, and installs or packages it for the chosen surface.
+
+Install it like any other skill, into whichever agents you use:
+
+```bash
+npx skills add ./skillship -a cursor,claude-code [--global]
+# or, dogfooding skillship itself:
+npx skillship install ./skillship -a cursor,claude-code
+```
+
 ## Development
 
 ```bash
@@ -148,6 +163,7 @@ src/
   lib/exec.ts             # spawn wrappers for npx skills / gh / agentskills
   lib/load.ts             # SKILL.md loader
 templates/                # CI + snippet + AGENTS/README/SKILL templates for init
+skillship/                # bundled Agent Skill (the /skillship skill)
 test/                     # vitest specs + fixtures
 ```
 
