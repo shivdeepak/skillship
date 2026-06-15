@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/shivdeepak/skillship/compare/skillship-v1.1.0...skillship-v1.2.0) (2026-06-15)
+
+
+### Features
+
+* **init:** scaffold cursor/rules/&lt;name&gt;.mdc and cursor/hooks.json via --snippets ([0bcccff](https://github.com/shivdeepak/skillship/commit/0bcccffcfecfe625e80119ee7e5912b70498587d))
+
 ## [1.1.0](https://github.com/shivdeepak/skillship/compare/skillship-v1.0.3...skillship-v1.1.0) (2026-06-15)
 
 
