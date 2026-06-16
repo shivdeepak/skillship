@@ -200,7 +200,7 @@ export async function fetchRemoteSkill(
  * Resolution order:
  *  1. If `subpath` given → `<clone>/<subpath>` (must contain SKILL.md)
  *  2. If `skillFilter` given → walk tree for SKILL.md whose `name` field matches
- *  3. Standard convention → `<clone>/<repoName>/SKILL.md`
+ *  3. Standard convention → `<clone>/skills/<repoName>/SKILL.md`
  *  4. Fallback → `<clone>/SKILL.md`
  */
 async function resolveSkillDir(
@@ -229,15 +229,15 @@ async function resolveSkillDir(
     return match;
   }
 
-  // Conventional: <clone>/<repoName>/SKILL.md
-  const conventional = join(cloneDir, repoName);
+  // Conventional: <clone>/skills/<repoName>/SKILL.md
+  const conventional = join(cloneDir, "skills", repoName);
   if (existsSync(join(conventional, "SKILL.md"))) return conventional;
 
   // Root-level fallback: <clone>/SKILL.md
   if (existsSync(join(cloneDir, "SKILL.md"))) return cloneDir;
 
   throw new Error(
-    `No SKILL.md found in cloned repo. Expected it at "${repoName}/SKILL.md" or root.`,
+    `No SKILL.md found in cloned repo. Expected it at "skills/${repoName}/SKILL.md" or root.`,
   );
 }
 

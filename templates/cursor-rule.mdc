@@ -7,5 +7,5 @@ alwaysApply: false
 
 This rule points the agent at the `{{name}}` Agent Skill.
 
-Read `{{name}}/SKILL.md` and follow its instructions when the task matches the
-skill's description.
+Read the `{{name}}` skill's `SKILL.md` and follow its instructions when the task
+matches the skill's description.

@@ -5,7 +5,7 @@ Claude Code, Claude Web, and Claude Cowork.
 
 ## Layout
 
-- `{{name}}/SKILL.md` — the skill itself (source of truth).
+- `skills/{{name}}/SKILL.md` — the skill itself (source of truth).
 - `cursor/rules/{{name}}.mdc` — Cursor rule; auto-installed by `skillship
   install -a cursor`.
 - `cursor/hooks.json` — Cursor hook entries; merged into `~/.cursor/hooks.json`
@@ -21,7 +21,7 @@ Claude Code, Claude Web, and Claude Cowork.
   the
   version; merging the release PR publishes `{{name}}.skill` to a GitHub
   Release.
-- Keep the `description` in `{{name}}/SKILL.md` <= 200 chars so it uploads to
+- Keep the `description` in `skills/{{name}}/SKILL.md` <= 200 chars so it uploads to
   Claude Web/Cowork.
 - The version line in `SKILL.md` carries `# x-release-please-version` so
   release-please updates it in place.

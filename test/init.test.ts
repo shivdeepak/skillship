@@ -30,7 +30,7 @@ describe("init", () => {
 
     const root = join(process.cwd(), "demo");
     const expectedFiles = [
-      "demo/SKILL.md",
+      "skills/demo/SKILL.md",
       "README.md",
       "AGENTS.md",
       "release-please-config.json",
@@ -45,14 +45,14 @@ describe("init", () => {
       expect(existsSync(join(root, f)), `missing ${f}`).toBe(true);
     }
 
-    const skillMd = await readFile(join(root, "demo", "SKILL.md"), "utf8");
+    const skillMd = await readFile(join(root, "skills", "demo", "SKILL.md"), "utf8");
     expect(skillMd).toContain("name: demo");
     expect(skillMd).toContain("x-release-please-version");
 
     const cfg = JSON.parse(
       await readFile(join(root, "release-please-config.json"), "utf8"),
     );
-    expect(cfg.packages["."]["extra-files"][0].path).toBe("demo/SKILL.md");
+    expect(cfg.packages["."]["extra-files"][0].path).toBe("skills/demo/SKILL.md");
 
     const manifest = JSON.parse(
       await readFile(join(root, ".release-please-manifest.json"), "utf8"),
@@ -72,6 +72,6 @@ describe("init", () => {
     const root = join(process.cwd(), "plain");
     expect(existsSync(join(root, ".github"))).toBe(false);
     expect(existsSync(join(root, "cursor"))).toBe(false);
-    expect(existsSync(join(root, "plain", "SKILL.md"))).toBe(true);
+    expect(existsSync(join(root, "skills", "plain", "SKILL.md"))).toBe(true);
   });
 });

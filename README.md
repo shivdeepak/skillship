@@ -56,8 +56,9 @@ skillship doctor
 `<source>` for `install` is a local path (default `.`) **or** any remote ref
 supported by `npx skills add`: `owner/repo`, `owner/repo@skill-name`, a full
 GitHub/GitLab URL, or an SSH git URL. For `validate` and `package`, `<dir>`
-defaults to `.` and must contain a `SKILL.md`. All commands exit non-zero on
-failure.
+defaults to `.` and must contain a `SKILL.md`; a bare skill name resolves to
+`skills/<name>/` by convention, so `validate my-skill` finds
+`skills/my-skill/SKILL.md`. All commands exit non-zero on failure.
 
 ### validate
 
@@ -151,14 +152,15 @@ GitHub Actions workflows; `--snippets` adds a Cursor rule and hooks file that
 `skillship install` will automatically deploy.
 
 By default `init` scaffolds **into the current directory** (the skill body goes
-in `<name>/SKILL.md`, repo files at the root). Pass `--new-dir` to create a new
-`<name>/` project directory instead. The layout below is relative to that root.
+in `skills/<name>/SKILL.md`, repo files at the root). Pass `--new-dir` to create
+a new `<name>/` project directory instead. The layout below is relative to that
+root.
 
 Scaffolded layout:
 
 ```
 my-skill/
-  my-skill/SKILL.md
+  skills/my-skill/SKILL.md
   cursor/                   # if --snippets
     rules/
       my-skill.mdc          # Cursor trigger rule (auto-installed)
@@ -212,7 +214,7 @@ src/
   lib/load.ts             # SKILL.md loader
   lib/remote.ts           # remote ref detection, URL parsing, git clone + skill dir resolution
 templates/                # CI + snippet + AGENTS/README/SKILL templates for init
-skillship/                # bundled Agent Skill (the /skillship skill)
+skills/skillship/         # bundled Agent Skill (the /skillship skill)
 test/                     # vitest specs + fixtures
 ```
 

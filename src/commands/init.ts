@@ -58,7 +58,7 @@ export async function initCommand(
     return 1;
   }
 
-  const skillDir = join(root, skillName);
+  const skillDir = join(root, "skills", skillName);
   if (existsSync(skillDir)) {
     process.stderr.write(`Error: skill directory "${skillName}" already exists.\n`);
     return 1;
@@ -106,7 +106,7 @@ export async function initCommand(
   }
 
   const hint = options.newDir ? `  cd ${skillName}\n` : "";
-  process.stdout.write(`Scaffolded ${skillName}/ (${writes.length} files)\n`);
+  process.stdout.write(`Scaffolded skills/${skillName}/ (${writes.length} files)\n`);
   process.stdout.write(hint);
   process.stdout.write(`  npx skillship validate ${skillName} --profile all\n`);
   return 0;

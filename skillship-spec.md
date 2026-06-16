@@ -154,11 +154,12 @@ parameterized by skill `name`:
 
 - `release-please-config.json` — manifest config, `release-type: simple`,
   changelog sections (`feat`/`fix`/`perf`/`docs`/`refactor`; `ci`/`chore`
-  hidden), and an `extra-files` `generic` updater targeting `<name>/SKILL.md`.
+  hidden), and an `extra-files` `generic` updater targeting
+  `skills/<name>/SKILL.md`.
 - `.release-please-manifest.json` — `{ ".": "1.0.0" }`.
 - `version.txt` — `1.0.0`.
 - `.github/workflows/validate.yml` — on `pull_request` + `push`, runs
-  `npx skillship validate <name>`.
+  `npx skillship validate <name>` (resolves `skills/<name>/` by convention).
 - `.github/workflows/release.yml` — on `push` to `main`: run
   `googleapis/release-please-action@v4`; then, gated on
   `steps.release.outputs.release_created`, check out, `npx skillship package
@@ -182,7 +183,7 @@ A consumer skill repo scaffolded by `init`:
 
 ```
 my-skill/
-  my-skill/SKILL.md
+  skills/my-skill/SKILL.md
   cursor/                   # if --snippets
     rules/my-skill.mdc      # Cursor trigger rule (auto-installed by install -a cursor)
     hooks.json              # Cursor hooks merged into ~/.cursor/hooks.json on install
@@ -218,7 +219,7 @@ skillship/
     AGENTS.md
     README.md
     SKILL.md
-  skillship/                # bundled Agent Skill (the /skillship skill)
+  skills/skillship/         # bundled Agent Skill (the /skillship skill)
     SKILL.md
   test/
     fixtures/

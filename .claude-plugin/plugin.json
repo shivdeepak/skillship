@@ -1,0 +1,7 @@
+{
+  "name": "skillship",
+  "description": "Drives the skillship CLI to scaffold, validate, package, and publish Agent Skills across platforms.",
+  "author": {
+    "name": "Shiv Deepak"
+  }
+}
