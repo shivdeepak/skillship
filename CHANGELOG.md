@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/shivdeepak/skillship/compare/skillship-v1.2.2...skillship-v1.2.3) (2026-06-16)
+
+
+### Refactors
+
+* rename skillship directory to skills and update related documentation ([fdfda5c](https://github.com/shivdeepak/skillship/commit/fdfda5cc4cd24a493aea3b4cc2a1fe1daa9ff4c8))
+
 ## [1.2.2](https://github.com/shivdeepak/skillship/compare/skillship-v1.2.1...skillship-v1.2.2) (2026-06-15)
 
 
