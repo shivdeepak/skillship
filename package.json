@@ -1,6 +1,6 @@
 {
   "name": "skillship",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "description": "Make any Agent Skill (SKILL.md) portable across Cursor, Claude Code, Claude Web, and Claude Cowork.",
   "type": "module",
   "repository": {

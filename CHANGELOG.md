@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.7](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.6...skillship-v1.3.7) (2026-06-17)
+
+
+### Documentation
+
+* add .gitignore and enhance installation instructions in README and SKILL.md ([22fc93a](https://github.com/shivdeepak/skillship/commit/22fc93a3653212c0832b00e3ce615a9b5d45e8ac))
+
 ## [1.3.6](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.5...skillship-v1.3.6) (2026-06-17)
 
 
