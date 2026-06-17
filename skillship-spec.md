@@ -150,7 +150,7 @@ unzips the output and asserts every entry sits under a `<skill-name>/` segment.
   ```
   npx skills add <dir> [--global] [--copy] -a <agent...>
   ```
-Default agents when `--agent` omitted: `cursor,claude-code`. Map `--global` to
+Default agents when `-a` omitted: -a `cursor` -a `claude-code`. Map `--global` to
 `npx skills` global flag and `--copy` to its copy flag.
 - When installing for `cursor`, also deploy the skill's Cursor extras if
   present:
@@ -282,7 +282,7 @@ Required tests:
   non-zero with clear messages otherwise.
 - `npx skillship package ./my-skill` yields `dist/my-skill.skill` that uploads
   cleanly to Claude Web and Cowork.
-- `npx skillship install ./my-skill -a cursor,claude-code` installs via
+- `npx skillship install ./my-skill -a cursor -a claude-code` installs via
   `npx skills`.
 - `npx skillship init demo --ci --snippets` scaffolds a repo whose CI, on a
   merged release PR, publishes `demo.skill` to a GitHub Release.

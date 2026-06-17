@@ -59,10 +59,10 @@ GitHub/GitLab URL, or an SSH git URL. `validate` and `package` both default to
 `.`: `validate` checks every skill found under it (or its `skills/`) and
 `package` bundles them. A bare skill name resolves to
 `skills/<name>/` by convention, so `validate my-skill` finds
-`skills/my-skill/SKILL.md`. Names may be `:`-namespaced (e.g.
-`validate skillship:author` resolves `skills/skillship:author/`), and a repo can
-hold many skills side by side under `skills/`. All commands exit non-zero on
-failure.
+`skills/my-skill/SKILL.md`. Names may be `:`-namespaced; the `:` becomes `-` in
+the directory (e.g. `validate skillship:author` resolves
+`skills/skillship-author/`), and a repo can hold many skills side by side under
+`skills/`. All commands exit non-zero on failure.
 
 ### validate
 
@@ -120,10 +120,10 @@ filename (so `skillship:author` is stored as `skillship-author/`).
 
 ```bash
 # Local directory (existing behaviour)
-skillship install ./my-skill -a cursor,claude-code
+skillship install ./my-skill -a cursor -a claude-code
 
 # GitHub shorthand — clones and installs in one step
-npx skillship install shivdeepak/knowledge-base-builder -a cursor,claude-code
+npx skillship install shivdeepak/knowledge-base-builder -a cursor -a claude-code
 
 # GitHub shorthand with skill-name filter (multi-skill repos)
 npx skillship install vercel-labs/agent-skills@frontend-design
@@ -145,8 +145,9 @@ locates the `SKILL.md`, installs from there, then cleans up. `git` must be
 available on `PATH` — run `skillship doctor` to check.
 
 For filesystem agents, shells out to `npx skills add <dir> [--global] [--copy]
--a <agents>`. Default agents are `cursor,claude-code`. For upload-only surfaces
-(`claude-web`, `claude-cowork`) it prints upload instructions instead.
+-a <agent> [-a <agent>]`. Default agents are `cursor` and `claude-code`.
+For upload-only surfaces (`claude-web`, `claude-cowork`) it prints upload
+instructions instead.
 
 When installing for **Cursor**, two additional steps run automatically if the
 corresponding files exist inside the skill directory:

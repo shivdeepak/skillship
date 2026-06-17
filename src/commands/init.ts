@@ -28,9 +28,9 @@ function templatesDir(): string {
   return candidates[0];
 }
 
-async function renderTemplate(file: string, name: string): Promise<string> {
+async function renderTemplate(file: string, name: string, dir: string): Promise<string> {
   const raw = await readFile(join(templatesDir(), file), "utf8");
-  return raw.replaceAll("{{name}}", name);
+  return raw.replaceAll("{{name}}", name).replaceAll("{{dir}}", dir);
 }
 
 /** Write `content` to `target` only when it does not already exist. Returns
@@ -54,29 +54,35 @@ export async function initCommand(
     return 1;
   }
 
+  // Filesystem-safe form of the name: a namespaced skill like "skillship:author"
+  // keeps its colon in the SKILL.md `name`, but every directory, filename, and
+  // release asset uses a hyphen ("skillship-author").
+  const dirName = skillName.replaceAll(":", "-");
+
   // By default, scaffold into the current directory. With --new-dir, create
   // a new project subdirectory named after the skill (legacy behaviour).
-  const root = options.newDir ? resolve(process.cwd(), skillName) : process.cwd();
+  const root = options.newDir ? resolve(process.cwd(), dirName) : process.cwd();
 
   if (options.newDir && existsSync(root)) {
-    process.stderr.write(`Error: directory "${skillName}" already exists.\n`);
+    process.stderr.write(`Error: directory "${dirName}" already exists.\n`);
     return 1;
   }
 
-  // Always scaffold under skills/<name>/. Re-running on an existing skill is
+  // Always scaffold under skills/<dir>/. Re-running on an existing skill is
   // allowed: emit() skips files that already exist, so missing scaffolding
   // (CI, snippets, repo files) is filled in without touching the authored
   // SKILL.md.
-  const skillDir = join(root, "skills", skillName);
+  const skillDir = join(root, "skills", dirName);
 
+  const render = (file: string) => renderTemplate(file, skillName, dirName);
   const writes: Array<[string, string]> = [];
 
-  writes.push([join(skillDir, "SKILL.md"), await renderTemplate("SKILL.md", skillName)]);
-  writes.push([join(root, "README.md"), await renderTemplate("README.md", skillName)]);
-  writes.push([join(root, "AGENTS.md"), await renderTemplate("AGENTS.md", skillName)]);
+  writes.push([join(skillDir, "SKILL.md"), await render("SKILL.md")]);
+  writes.push([join(root, "README.md"), await render("README.md")]);
+  writes.push([join(root, "AGENTS.md"), await render("AGENTS.md")]);
   writes.push([
     join(root, "release-please-config.json"),
-    await renderTemplate("release-please-config.json", skillName),
+    await render("release-please-config.json"),
   ]);
   writes.push([
     join(root, ".release-please-manifest.json"),
@@ -87,22 +93,22 @@ export async function initCommand(
   if (options.ci) {
     writes.push([
       join(root, ".github", "workflows", "validate.yml"),
-      await renderTemplate("validate.yml", skillName),
+      await render("validate.yml"),
     ]);
     writes.push([
       join(root, ".github", "workflows", "release.yml"),
-      await renderTemplate("release.yml", skillName),
+      await render("release.yml"),
     ]);
   }
 
   if (options.snippets) {
     writes.push([
-      join(root, "cursor", "rules", `${skillName}.mdc`),
-      await renderTemplate("cursor-rule.mdc", skillName),
+      join(root, "cursor", "rules", `${dirName}.mdc`),
+      await render("cursor-rule.mdc"),
     ]);
     writes.push([
       join(root, "cursor", "hooks.json"),
-      await renderTemplate("cursor-hooks.json", skillName),
+      await render("cursor-hooks.json"),
     ]);
   }
 
@@ -113,9 +119,9 @@ export async function initCommand(
 
   const skipped = writes.length - created;
   const suffix = skipped > 0 ? `, ${skipped} already present` : "";
-  const hint = options.newDir ? `  cd ${skillName}\n` : "";
-  process.stdout.write(`Scaffolded skills/${skillName}/ (${created} files written${suffix})\n`);
+  const hint = options.newDir ? `  cd ${dirName}\n` : "";
+  process.stdout.write(`Scaffolded skills/${dirName}/ (${created} files written${suffix})\n`);
   process.stdout.write(hint);
-  process.stdout.write(`  npx skillship validate ${skillName} --profile all\n`);
+  process.stdout.write(`  npx skillship@latest validate ${dirName} --profile all\n`);
   return 0;
 }

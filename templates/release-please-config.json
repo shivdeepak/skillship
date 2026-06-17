@@ -15,7 +15,7 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "skills/{{name}}/SKILL.md"
+          "path": "skills/{{dir}}/SKILL.md"
         }
       ]
     }

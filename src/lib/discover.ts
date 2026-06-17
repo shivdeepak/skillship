@@ -7,8 +7,9 @@ import { join, resolve } from "node:path";
  * Resolution order:
  *   1. `<dir>/SKILL.md` exists → the dir itself is a single skill.
  *   2. `skills/<dir>/SKILL.md` exists (relative to cwd) → the `skills/`
- *      convention, so a bare skill name resolves without the redundant prefix
- *      (e.g. `skillship:author` → `skills/skillship:author`).
+ *      convention, so a bare skill name resolves without the redundant prefix.
+ *      Namespaced names map `:` → `-` to match the on-disk folder
+ *      (e.g. `skillship:author` → `skills/skillship-author`).
  *   3. `<dir>/skills/` exists → every immediate subdir with a `SKILL.md`.
  *   4. otherwise → every immediate subdir of `<dir>` with a `SKILL.md`.
  *
@@ -18,8 +19,10 @@ export function discoverSkillDirs(dir: string): string[] {
   const abs = resolve(dir);
   if (existsSync(join(abs, "SKILL.md"))) return [abs];
 
-  const underSkills = resolve(process.cwd(), "skills", dir);
-  if (existsSync(join(underSkills, "SKILL.md"))) return [underSkills];
+  for (const candidate of new Set([dir, dir.replaceAll(":", "-")])) {
+    const underSkills = resolve(process.cwd(), "skills", candidate);
+    if (existsSync(join(underSkills, "SKILL.md"))) return [underSkills];
+  }
 
   const skillsRoot = existsSync(join(abs, "skills")) ? join(abs, "skills") : abs;
 

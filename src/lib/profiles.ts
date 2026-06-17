@@ -72,11 +72,14 @@ function checkName(
       message: `\`name\` "${name}" must be lowercase letters, numbers, and single hyphens, optionally namespaced with \`:\` (e.g. "skillship:author").`,
     });
   }
-  if (name !== folderName) {
+  // A namespaced name keeps its `:`, but the directory may use `-` instead
+  // (colons are not portable in paths). Accept the folder matching either the
+  // literal name or its directory-safe (`:` → `-`) form.
+  if (name !== folderName && name.replaceAll(":", "-") !== folderName) {
     findings.push({
       severity: "error",
       check: "name-matches-folder",
-      message: `\`name\` "${name}" must match the parent folder "${folderName}".`,
+      message: `\`name\` "${name}" must match the parent folder "${folderName}" (\`:\` may be written as \`-\`).`,
     });
   }
 }

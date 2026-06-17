@@ -5,23 +5,23 @@ Claude Code, Claude Web, and Claude Cowork.
 
 ## Layout
 
-- `skills/{{name}}/SKILL.md` — the skill itself (source of truth).
-- `cursor/rules/{{name}}.mdc` — Cursor rule; auto-installed by `skillship
+- `skills/{{dir}}/SKILL.md` — the skill itself (source of truth).
+- `cursor/rules/{{dir}}.mdc` — Cursor rule; auto-installed by `skillship
   install -a cursor`.
 - `cursor/hooks.json` — Cursor hook entries; merged into `~/.cursor/hooks.json`
   on install.
 - `release-please-config.json`, `.release-please-manifest.json`, `version.txt` —
   release automation via release-please + Conventional Commits.
 - `.github/workflows/validate.yml` — validates the skill on PRs/pushes.
-- `.github/workflows/release.yml` — cuts releases and uploads `{{name}}.skill`.
+- `.github/workflows/release.yml` — cuts releases and uploads `{{dir}}.skill`.
 
 ## Conventions
 
 - Use Conventional Commits (`feat:`, `fix:`, `docs:`, ...). `feat`/`fix` bump
   the
-  version; merging the release PR publishes `{{name}}.skill` to a GitHub
+  version; merging the release PR publishes `{{dir}}.skill` to a GitHub
   Release.
-- Keep the `description` in `skills/{{name}}/SKILL.md` <= 200 chars so it
+- Keep the `description` in `skills/{{dir}}/SKILL.md` <= 200 chars so it
   uploads to
   Claude Web/Cowork.
 - The version line in `SKILL.md` carries `# x-release-please-version` so
@@ -31,4 +31,4 @@ Claude Code, Claude Web, and Claude Cowork.
 
 - `npx skillship validate --profile all`
 - `npx skillship package`
-- `npx skillship install {{name}} -a cursor,claude-code`
+- `npx skillship install {{dir}} -a cursor -a claude-code`
