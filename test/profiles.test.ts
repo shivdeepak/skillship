@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { parseSkill } from "../src/lib/frontmatter.js";
 import {
+  NAME_RE,
   validateProfile,
   type ProfileName,
 } from "../src/lib/profiles.js";
@@ -58,4 +59,23 @@ describe("validation profiles", () => {
       });
     }
   }
+});
+
+describe("namespaced skill names", () => {
+  it("NAME_RE accepts colon-namespaced names and rejects malformed ones", () => {
+    expect(NAME_RE.test("skillship")).toBe(true);
+    expect(NAME_RE.test("skillship:author")).toBe(true);
+    expect(NAME_RE.test("my-skill:sub-task")).toBe(true);
+    expect(NAME_RE.test(":bad")).toBe(false);
+    expect(NAME_RE.test("bad:")).toBe(false);
+    expect(NAME_RE.test("Bad:Name")).toBe(false);
+  });
+
+  it("passes the name check when the folder matches a namespaced name", () => {
+    const parsed = parseSkill(
+      "---\nname: skillship:author\ndescription: A valid namespaced skill.\n---\nBody.",
+    );
+    const result = validateProfile(parsed, "/tmp/skillship:author", "all");
+    expect(result.ok).toBe(true);
+  });
 });

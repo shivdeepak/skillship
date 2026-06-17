@@ -28,8 +28,8 @@ program
 
 program
   .command("package")
-  .description("Validate then build a .skill zip for Claude upload")
-  .argument("[dir]", "skill directory", ".")
+  .description("Validate then bundle all skills under <dir> into one .skill zip for Claude upload")
+  .argument("[dir]", "project or skill directory", ".")
   .option("--out <dir>", "output directory", "dist")
   .action(async (dir, opts) => {
     process.exit(await packageCommand(dir, opts));

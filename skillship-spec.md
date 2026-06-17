@@ -88,7 +88,7 @@ Parse the `SKILL.md` YAML frontmatter (`name`, `description`, optional
 
 | Check | spec | cursor | claude-web | claude-cowork |
 | --- | --- | --- | --- | --- |
-| `name` present, lowercase/numbers/hyphens, no leading/trailing/`--` | yes | yes | yes | yes |
+| `name` present, lowercase/numbers/hyphens, no leading/trailing/`--`, optional `:`-namespacing (e.g. `skillship:author`) | yes | yes | yes | yes |
 | `name` matches parent folder | yes | yes | yes | yes |
 | `description` non-empty, no `<`/`>` (XML) | yes | yes | yes | yes |
 | `description` length | <= 1024 | <= 1024 | **<= 200** | **<= 200** |
@@ -105,17 +105,30 @@ mis-joining. (This was a real bug in the origin `validate.py` — handle it.)
 
 ## 5. Packaging contract
 
-`skillship package <dir>`:
+`skillship package [dir]` (default `dir` = `.`):
 
-1. Run `validate <dir> --profile all` first; abort on failure.
-2. Produce `<out>/<name>.skill` (default `<out>` = `dist/`), a zip where the
-   **archive root is the skill folder** — i.e. entries are `<name>/SKILL.md`,
-   `<name>/...`. Claude upload rejects archives with files at the zip root.
-3. Exclude `__pycache__/`, `.DS_Store`, `node_modules/`, `dist/`, `.git/`.
-4. The `.skill` file is a normal zip with a renamed extension.
+1. Discover the skills to bundle: if `<dir>/SKILL.md` exists it is a single
+   skill; else bundle every immediate subdir of `<dir>/skills/` (or of `<dir>`)
+   that contains a `SKILL.md`.
+2. Run `validate --profile all` on every discovered skill first; abort if any
+   fails.
+3. Produce a single `<out>/<name>.skill` (default `<out>` = `dist/`), a zip
+   where each skill lives under its own `<skill-name>/` folder at the root —
+   i.e. entries are `<skill-name>/SKILL.md`, `<skill-name>/...`. Claude upload
+   rejects archives with files at the zip root.
+4. The bundle `<name>` is the lone skill's name, or for multiple skills their
+   longest common prefix trimmed of a trailing `-`/`:` (e.g. `skillship`,
+   `skillship:author`, `skillship:install` → `skillship`), falling back to the
+   project folder name.
+5. `:` is rewritten to `-` in zip folder names and the output filename, since
+   `:` is illegal in filenames on Windows (and archivers treat a leading
+   `prefix:` as a drive). So `skillship:author` is stored as
+   `skillship-author/`.
+6. Exclude `__pycache__/`, `.DS_Store`, `node_modules/`, `dist/`, `.git/`.
+7. The `.skill` file is a normal zip with a renamed extension.
 
 Use `archiver` (or `yazl`) for deterministic zip creation. Add a test that
-unzips the output and asserts the first path segment equals `<name>`.
+unzips the output and asserts every entry sits under a `<skill-name>/` segment.
 
 ## 6. Install behavior
 
@@ -126,6 +139,10 @@ unzips the output and asserts the first path segment equals `<name>`.
   shallow
   to a temp directory, installed from there, then cleaned up. `git` must be on
   PATH.
+- Remote skill resolution: a tree-URL subpath or `@skill-name` filter wins;
+  otherwise `skills/<repoName>/` is tried, then a lone skill under `skills/`. A
+  repo with multiple skills under `skills/` requires `@skill-name` or a subpath
+  to disambiguate.
 - For filesystem agents (Cursor, Claude Code, etc.), shell out to the ecosystem
   tool rather than copying by hand:
   ```

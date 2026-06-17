@@ -55,10 +55,14 @@ skillship doctor
 
 `<source>` for `install` is a local path (default `.`) **or** any remote ref
 supported by `npx skills add`: `owner/repo`, `owner/repo@skill-name`, a full
-GitHub/GitLab URL, or an SSH git URL. For `validate` and `package`, `<dir>`
-defaults to `.` and must contain a `SKILL.md`; a bare skill name resolves to
+GitHub/GitLab URL, or an SSH git URL. For `validate`, `<dir>` defaults to `.`
+and must contain a `SKILL.md`; `package` defaults to `.` and bundles every skill
+found under it (or its `skills/`). A bare skill name resolves to
 `skills/<name>/` by convention, so `validate my-skill` finds
-`skills/my-skill/SKILL.md`. All commands exit non-zero on failure.
+`skills/my-skill/SKILL.md`. Names may be `:`-namespaced (e.g.
+`validate skillship:author` resolves `skills/skillship:author/`), and a repo can
+hold many skills side by side under `skills/`. All commands exit non-zero on
+failure.
 
 ### validate
 
@@ -68,7 +72,7 @@ profile:
 
 | Check | spec | cursor | claude-web | claude-cowork |
 | --- | --- | --- | --- | --- |
-| `name` present, lowercase/numbers/hyphens | yes | yes | yes | yes |
+| `name` present, lowercase/numbers/hyphens, optional `:`-namespacing | yes | yes | yes | yes |
 | `name` matches parent folder | yes | yes | yes | yes |
 | `description` non-empty, no `<`/`>` | yes | yes | yes | yes |
 | `description` length | <= 1024 | <= 1024 | **<= 200** | **<= 200** |
@@ -86,14 +90,23 @@ findings are merged in; it is never a hard dependency.
 ### package
 
 ```bash
-skillship package ./my-skill            # -> dist/my-skill.skill
-skillship package ./my-skill --out out  # -> out/my-skill.skill
+skillship package            # bundle every skill under ./skills/ -> dist/<name>.skill
+skillship package --out out  # -> out/<name>.skill
+skillship package ./skills/my-skill   # bundle just one skill -> dist/my-skill.skill
 ```
 
-Runs `validate --profile all` first (aborts on failure), then produces a
-`<name>.skill` zip whose **archive root is the skill folder** (entries are
-`<name>/SKILL.md`, ...) — Claude rejects archives with files at the zip root.
-Excludes `__pycache__/`, `.DS_Store`, `node_modules/`, `dist/`, `.git/`.
+Discovers every skill under `<dir>` (a lone `SKILL.md`, else each subdir of
+`skills/` that has one), runs `validate --profile all` on each (aborts if any
+fails), then bundles them all into a **single** `<name>.skill` zip. Each skill
+lives under its own `<skill-name>/` folder at the zip root — Claude rejects
+archives with files at the zip root. Excludes `__pycache__/`, `.DS_Store`,
+`node_modules/`, `dist/`, `.git/`.
+
+The bundle `<name>` is the single skill's name, or for multiple skills their
+common prefix (e.g. `skillship`, `skillship:author`, `skillship:install` →
+`skillship`), falling back to the project folder name. Because `:` is illegal in
+filenames on Windows, it is rewritten to `-` in zip folders and the output
+filename (so `skillship:author` is stored as `skillship-author/`).
 
 ### install
 

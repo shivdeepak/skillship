@@ -21,7 +21,8 @@ Claude Code, Claude Web, and Claude Cowork.
   the
   version; merging the release PR publishes `{{name}}.skill` to a GitHub
   Release.
-- Keep the `description` in `skills/{{name}}/SKILL.md` <= 200 chars so it uploads to
+- Keep the `description` in `skills/{{name}}/SKILL.md` <= 200 chars so it
+  uploads to
   Claude Web/Cowork.
 - The version line in `SKILL.md` carries `# x-release-please-version` so
   release-please updates it in place.
@@ -29,5 +30,5 @@ Claude Code, Claude Web, and Claude Cowork.
 ## Commands
 
 - `npx skillship validate {{name}} --profile all`
-- `npx skillship package {{name}}`
+- `npx skillship package`
 - `npx skillship install {{name}} -a cursor,claude-code`

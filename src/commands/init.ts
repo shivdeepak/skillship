@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { NAME_RE } from "../lib/profiles.js";
 
 export interface InitOptions {
   ci?: boolean;
@@ -42,9 +43,9 @@ export async function initCommand(
   options: InitOptions,
 ): Promise<number> {
   const skillName = name ?? "my-skill";
-  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(skillName)) {
+  if (!NAME_RE.test(skillName)) {
     process.stderr.write(
-      `Invalid skill name "${skillName}". Use lowercase letters, numbers, and single hyphens.\n`,
+      `Invalid skill name "${skillName}". Use lowercase letters, numbers, and single hyphens, optionally namespaced with ':' (e.g. "skillship:author").\n`,
     );
     return 1;
   }

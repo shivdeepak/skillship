@@ -39,7 +39,9 @@ const DESCRIPTION_MAX: Record<Exclude<ProfileName, "all">, number> = {
 
 const BODY_RECOMMENDED_MAX_LINES = 500;
 
-const NAME_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+// A skill name is one or more lowercase/number/hyphen segments. Segments may be
+// joined with `:` to namespace a skill under a parent (e.g. `skillship:author`).
+export const NAME_RE = /^[a-z0-9]+(-[a-z0-9]+)*(:[a-z0-9]+(-[a-z0-9]+)*)*$/;
 
 function descriptionMax(profile: ProfileName): number {
   if (profile === "all") {
@@ -67,7 +69,7 @@ function checkName(
     findings.push({
       severity: "error",
       check: "name-format",
-      message: `\`name\` "${name}" must be lowercase letters, numbers, and single hyphens (no leading/trailing/double hyphens).`,
+      message: `\`name\` "${name}" must be lowercase letters, numbers, and single hyphens, optionally namespaced with \`:\` (e.g. "skillship:author").`,
     });
   }
   if (name !== folderName) {

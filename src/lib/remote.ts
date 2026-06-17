@@ -233,11 +233,27 @@ async function resolveSkillDir(
   const conventional = join(cloneDir, "skills", repoName);
   if (existsSync(join(conventional, "SKILL.md"))) return conventional;
 
+  // Multi-skill repo: scan `skills/` for skill directories. If exactly one
+  // skill exists, use it; if several do, the choice is ambiguous so require a
+  // `@skill-name` filter or tree-URL subpath.
+  const skillsDir = join(cloneDir, "skills");
+  if (existsSync(skillsDir)) {
+    const skillDirs = readdirSync(skillsDir).filter((entry) =>
+      existsSync(join(skillsDir, entry, "SKILL.md")),
+    );
+    if (skillDirs.length === 1) return join(skillsDir, skillDirs[0]);
+    if (skillDirs.length > 1) {
+      throw new Error(
+        `Repo contains multiple skills (${skillDirs.join(", ")}). Pick one with "owner/repo@<skill-name>" or a tree-URL subpath.`,
+      );
+    }
+  }
+
   // Root-level fallback: <clone>/SKILL.md
   if (existsSync(join(cloneDir, "SKILL.md"))) return cloneDir;
 
   throw new Error(
-    `No SKILL.md found in cloned repo. Expected it at "skills/${repoName}/SKILL.md" or root.`,
+    `No SKILL.md found in cloned repo. Expected it at "skills/${repoName}/SKILL.md", a single skill under "skills/", or the repo root.`,
   );
 }
 
