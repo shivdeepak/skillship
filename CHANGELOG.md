@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.3](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.2...skillship-v1.3.3) (2026-06-17)
+
+
+### Documentation
+
+* update README and SKILL.md for improved installation clarity ([9182167](https://github.com/shivdeepak/skillship/commit/91821670a0c249901706a24a26b104c01e26fbfb))
+
 ## [1.3.2](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.1...skillship-v1.3.2) (2026-06-17)
 
 
