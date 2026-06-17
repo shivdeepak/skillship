@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.5](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.4...skillship-v1.3.5) (2026-06-17)
+
+
+### Documentation
+
+* update README and SKILL.md for flat sibling skill structure ([4dc1a41](https://github.com/shivdeepak/skillship/commit/4dc1a413cd6ec124a13ace15ca86471d1df3cfe7))
+
 ## [1.3.4](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.3...skillship-v1.3.4) (2026-06-17)
 
 
