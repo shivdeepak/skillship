@@ -155,8 +155,10 @@ unzips the output and asserts every entry sits under a `<skill-name>/` segment.
   root with several sibling skills installs them all.
 - Interactive prompts (only when stdin/stdout are a TTY and `-y`/`--yes` was not
   passed): when more than one skill will be installed, list them and ask for
-  y/n confirmation (abort cleanly on "no"); if `-g`/`--global` was not supplied, ask
-  global vs project; if `-c`/`--copy` was not supplied, ask copy vs symlink. Explicit
+  y/n confirmation (abort cleanly on "no"); if `-g`/`--global` was not supplied,
+  ask
+  global vs project; if `-c`/`--copy` was not supplied, ask copy vs symlink.
+  Explicit
   flags suppress their prompt; `-y`/`--yes` and non-interactive shells skip all
   prompts and fall back to provided flags plus defaults (project, symlink).
 - For filesystem agents (Cursor, Claude Code, etc.), shell out to the ecosystem
@@ -226,6 +228,7 @@ my-skill/
   .release-please-manifest.json
   version.txt
   .github/workflows/{validate,release}.yml
+  .gitignore                # ignores dist/, node_modules/, .DS_Store
   AGENTS.md
   README.md
 ```

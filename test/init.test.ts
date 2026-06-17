@@ -33,6 +33,7 @@ describe("init", () => {
       "skills/demo/SKILL.md",
       "README.md",
       "AGENTS.md",
+      ".gitignore",
       "release-please-config.json",
       ".release-please-manifest.json",
       "version.txt",

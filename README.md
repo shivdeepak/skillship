@@ -161,7 +161,8 @@ When run in an interactive terminal, `install` prompts before acting:
   confirmation (e.g. `owner/repo` resolving to several sibling skills).
 - If `-g`/`--global` was not passed, it asks whether to install globally (all
   projects) or in the current project.
-- If `-c`/`--copy` was not passed, it asks whether to copy the files or symlink them.
+- If `-c`/`--copy` was not passed, it asks whether to copy the files or symlink
+  them.
 
 Pass `-y`/`--yes` to skip every prompt and use the provided flags plus defaults
 (project scope, symlink). In a non-interactive shell (CI, pipes) prompts are
@@ -214,6 +215,7 @@ my-skill/
   .release-please-manifest.json
   version.txt
   .github/workflows/{validate,release}.yml
+  .gitignore                # ignores dist/, node_modules/, .DS_Store
   AGENTS.md
   README.md
 ```

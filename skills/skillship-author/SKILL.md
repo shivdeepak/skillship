@@ -14,25 +14,37 @@ Copy this checklist and track progress:
 
 ```
 - [ ] 1. Locate or create the SKILL.md
-- [ ] 2. Add missing scaffolding if needed (--ci, --snippets)
-- [ ] 3. Validate (skillship validate)
-- [ ] 4. Fix any reported issues, re-validate until clean
-- [ ] 5. Confirm publish target with the user
+- [ ] 2. Confirm publish target AND whether to add Cursor snippets (ask the user)
+- [ ] 3. Add missing scaffolding if needed (--ci, --snippets)
+- [ ] 4. Validate (skillship validate)
+- [ ] 5. Fix any reported issues, re-validate until clean
 - [ ] 6. Install (filesystem) or package (Claude upload)
 ```
+
+Ask the user the questions in Step 2 **before** running any `init`/`install`
+command. Never silently pass `--snippets` or pick an install scope for them.
 
 ### Step 1 — Locate or create the SKILL.md
 
 A skill is a directory containing a `SKILL.md`. Find one in the project (search
 for `SKILL.md`). Determine `<dir>` = the folder that directly contains it.
 
-- **Already exists** → go to Step 2.
+- **Found at the project root** (a bare `./SKILL.md`, not already under
+  `skills/<name>/`) → relocate it so it follows the standard layout:
+  1. Read the `name` from the `SKILL.md` frontmatter. If absent, derive a
+     candidate from the project folder name.
+  2. Confirm the skill `name` with the user (use AskQuestion). It must be
+     lowercase letters/numbers/hyphens (optionally `:`-namespaced).
+  3. Move the file to `skills/<name>/SKILL.md` (`:` maps to `-` in the folder,
+     e.g. `skillship:author` → `skills/skillship-author/`), then continue.
+- **Already under `skills/<name>/`** → go to Step 2.
 - **Does not exist** → scaffold a fresh skill. Always run `init` from the
   **project root** (it writes the skill body to `skills/<name>/SKILL.md` and
-  repo files at the root):
+  repo files at the root). Do **not** pass `--snippets` yet — that is a separate
+  decision made in Step 2:
 
 ```bash
-npx skillship@latest init <name> --ci --snippets
+npx skillship@latest init <name> --ci
 ```
 
 Then author the `SKILL.md` body following the `create-skill` skill's rules
@@ -44,12 +56,29 @@ instructions. Replace them with the real GitHub owner/repo if you can determine
 them (e.g. from `git remote get-url origin`); otherwise ask the user for the
 values and fill them in.
 
-### Step 2 — Add missing scaffolding to an existing skill
+### Step 2 — Confirm publish target and Cursor snippets
 
-If the user already has a `SKILL.md` but is missing CI workflows, Cursor
-snippets, or other boilerplate, re-run `init` **from the project root** with the
-skill's `name`. It fills in only the missing files and leaves existing files
-(including the authored `SKILL.md`) untouched:
+Ask the user two things (use AskQuestion) before scaffolding or installing:
+
+1. **Publish target(s)** — where to publish. Targets:
+
+| Target | Mechanism |
+| --- | --- |
+| `cursor`, `claude-code` | Filesystem install |
+| `claude-web`, `claude-cowork` | Upload-only `.skill` zip |
+
+2. **Cursor snippets** — only if `cursor` is a target. Snippets
+   (`cursor/rules/<name>.mdc` + `cursor/hooks.json`) auto-wire a Cursor rule and
+   hooks so the skill triggers automatically. This is **opt-in and separate**
+   from installing into Cursor — never add it just because Cursor is a target.
+   Ask "Add Cursor auto-trigger snippets (rules + hooks)?" and only pass
+   `--snippets` if the user says yes.
+
+### Step 3 — Add missing scaffolding
+
+Re-run `init` **from the project root** with the skill's `name` to fill in any
+missing CI workflows, snippets, or boilerplate. It writes only missing files and
+leaves existing files (including the authored `SKILL.md`) untouched:
 
 ```bash
 npx skillship@latest init <name> --ci [--snippets]
@@ -57,12 +86,14 @@ npx skillship@latest init <name> --ci [--snippets]
 
 - `--ci` adds `.github/workflows/validate.yml` and `release.yml` plus
   `release-please-config.json` for automated versioned releases.
-- `--snippets` adds `cursor/rules/<name>.mdc` and `cursor/hooks.json` so
-  `skillship install` auto-wires Cursor rules and hooks. Only include if the
-  user wants Cursor-specific integration; omit for a surface-agnostic skill.
+- `--snippets` adds `cursor/rules/<name>.mdc` and `cursor/hooks.json`. Include
+  it
+  **only if** the user opted in during Step 2.
+- `init` also always writes a `.gitignore` (ignoring `dist/`, `node_modules/`,
+  `.DS_Store`) so packaged artifacts and install output stay out of git.
 - Omit either flag if the user does not need that scaffolding.
 
-### Step 3 — Validate
+### Step 4 — Validate
 
 ```bash
 npx skillship@latest validate <dir> --profile all
@@ -71,31 +102,29 @@ npx skillship@latest validate <dir> --profile all
 `--profile all` is the strictest (Claude's 200-char description cap). Use
 `--json` if you need to parse results programmatically.
 
-### Step 4 — Fix and re-validate
+### Step 5 — Fix and re-validate
 
 Read each failure, edit the `SKILL.md`, and re-run validate until it exits 0.
 Common failures: description over 200 chars, `name` not matching the folder,
 `<`/`>` characters in the description, body over 500 lines (warning only).
 
-### Step 5 — Confirm the publish target
-
-Ask the user where to publish (use AskQuestion). Targets:
-
-| Target | Mechanism |
-| --- | --- |
-| `cursor`, `claude-code` | Filesystem install |
-| `claude-web`, `claude-cowork` | Upload-only `.skill` zip |
-
 ### Step 6 — Install or package
+
+Use the targets confirmed in Step 2.
 
 **Filesystem agents** (e.g. Cursor, Claude Code):
 
 ```bash
-npx skillship@latest install <dir> -a cursor -a claude-code
+npx skillship@latest install <dir> --global -a cursor -a claude-code
 ```
 
-Add `--global` to install for all projects, `--copy` to copy instead of
-symlink.
+Prefer `--global` when the skill lives in the project you are authoring it in:
+the source already sits at `skills/<name>/`, so a project-scoped install would
+copy/symlink it back into this same repo's `.cursor/` and `.claude/` (or
+`.agents/`) dirs — needless duplication. `--global` installs once under
+`~/.cursor` / `~/.claude` so the skill works everywhere, including here. Use a
+project-scoped install (omit `--global`) only when installing into a *different*
+consumer project. Add `--copy` to copy instead of symlink.
 
 **Upload-only surfaces** (e.g. Claude Web / Cowork):
 

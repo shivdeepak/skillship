@@ -14,6 +14,7 @@ Claude Code, Claude Web, and Claude Cowork.
   release automation via release-please + Conventional Commits.
 - `.github/workflows/validate.yml` — validates the skill on PRs/pushes.
 - `.github/workflows/release.yml` — cuts releases and uploads `{{file}}.skill`.
+- `.gitignore` — ignores `dist/`, `node_modules/`, `.DS_Store`.
 
 ## Conventions
 

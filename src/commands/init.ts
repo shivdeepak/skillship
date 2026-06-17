@@ -89,6 +89,7 @@ export async function initCommand(
   writes.push([join(skillDir, "SKILL.md"), await render("SKILL.md")]);
   writes.push([join(root, "README.md"), await render("README.md")]);
   writes.push([join(root, "AGENTS.md"), await render("AGENTS.md")]);
+  writes.push([join(root, ".gitignore"), await render("gitignore")]);
   writes.push([
     join(root, "release-please-config.json"),
     await render("release-please-config.json"),
