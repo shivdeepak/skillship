@@ -39,6 +39,11 @@ Then author the `SKILL.md` body following the `create-skill` skill's rules
 (third-person `description`, both WHAT and WHEN, under 500 lines). The skill
 `name` must be lowercase letters/numbers/hyphens and match the parent folder.
 
+The scaffolded `README.md` has `<owner>/<repo>` placeholders in its install
+instructions. Replace them with the real GitHub owner/repo if you can determine
+them (e.g. from `git remote get-url origin`); otherwise ask the user for the
+values and fill them in.
+
 ### Step 2 — Add missing scaffolding to an existing skill
 
 If the user already has a `SKILL.md` but is missing CI workflows, Cursor

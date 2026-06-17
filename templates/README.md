@@ -3,7 +3,30 @@
 An [Agent Skill](https://agentskills.io/specification) packaged for Cursor,
 Claude Code, Claude Web, and Claude Cowork.
 
-## Develop
+## Install
+
+### Install into Cursor or Claude Code (recommended)
+
+Install directly from this repo into your local agents:
+
+```bash
+npx skillship@latest install <owner>/<repo> -a cursor -a claude-code
+# or, equivalently, via the underlying multi-agent installer:
+npx skills add <owner>/<repo>
+```
+
+### Install into Claude Web or Cowork (upload a `.skill` file)
+
+1. Download `{{dir}}.skill` from this repo's
+   [Releases](https://github.com/<owner>/<repo>/releases/latest), or build it
+   yourself with `npx skillship@latest package {{dir}}`.
+2. Upload the `.skill` file:
+   - Claude Web: Settings -> Capabilities -> Upload skill -> enable toggle.
+   - Claude Cowork: Customize -> Skills -> Upload (desktop app only).
+
+## Contributing
+
+### Develop
 
 - Validate: `npx skillship@latest validate {{dir}} --profile all`
 - Package: `npx skillship@latest package {{dir}}` (produces
@@ -11,14 +34,7 @@ Claude Code, Claude Web, and Claude Cowork.
 - Install locally: `npx skillship@latest install {{dir}} -a cursor -a
   claude-code`
 
-## Upload to Claude
-
-1. `npx skillship@latest package {{dir}}`
-2. Upload `dist/{{dir}}.skill`:
-   - Claude Web: Settings -> Capabilities -> Upload skill -> enable toggle.
-   - Claude Cowork: Customize -> Skills -> Upload (desktop app only).
-
-## Releasing
+### Releasing
 
 This repo auto-releases with
 [release-please](https://github.com/googleapis/release-please-action) using
