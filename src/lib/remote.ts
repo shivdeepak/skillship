@@ -140,14 +140,18 @@ export function parseRemoteRef(ref: string): ParsedRemoteRef {
 }
 
 /**
- * Clone the remote skill to a temp directory and return the path to the local
- * skill directory (the one that contains SKILL.md).
+ * Clone the remote skill to a temp directory and return the path(s) to the
+ * local skill directories (each containing a SKILL.md).
+ *
+ * For a bare `owner/repo` whose `skills/` folder holds several skills, every
+ * skill is returned so callers can install them all. A subpath or `@skill-name`
+ * filter narrows the result to a single skill.
  *
  * The returned `cleanup()` deletes the temp dir; call it in a `finally` block.
  */
 export async function fetchRemoteSkill(
   ref: string,
-): Promise<{ localDir: string; cleanup: () => void }> {
+): Promise<{ localDirs: string[]; cleanup: () => void }> {
   if (!isAvailable("git")) {
     throw new Error(
       "`git` not found on PATH. Install git to use remote skill sources.",
@@ -181,13 +185,13 @@ export async function fetchRemoteSkill(
       throw new Error(`git clone failed (exit ${code}): ${cloneUrl}`);
     }
 
-    const localDir = await resolveSkillDir(
+    const localDirs = await resolveSkillDirs(
       cloneTarget,
       repoName,
       subpath,
       skillFilter,
     );
-    return { localDir, cleanup };
+    return { localDirs, cleanup };
   } catch (err) {
     cleanup();
     throw err;
@@ -195,20 +199,21 @@ export async function fetchRemoteSkill(
 }
 
 /**
- * Walk the cloned repo to find the skill directory to install.
+ * Walk the cloned repo to find the skill directories to install.
  *
  * Resolution order:
  *  1. If `subpath` given → `<clone>/<subpath>` (must contain SKILL.md)
  *  2. If `skillFilter` given → walk tree for SKILL.md whose `name` field matches
  *  3. Standard convention → `<clone>/skills/<repoName>/SKILL.md`
- *  4. Fallback → `<clone>/SKILL.md`
+ *  4. Multi-skill repo → every skill under `<clone>/skills/`
+ *  5. Fallback → `<clone>/SKILL.md`
  */
-async function resolveSkillDir(
+async function resolveSkillDirs(
   cloneDir: string,
   repoName: string,
   subpath?: string,
   skillFilter?: string,
-): Promise<string> {
+): Promise<string[]> {
   if (subpath) {
     const candidate = join(cloneDir, subpath);
     if (!existsSync(join(candidate, "SKILL.md"))) {
@@ -216,7 +221,7 @@ async function resolveSkillDir(
         `No SKILL.md found at subpath "${subpath}" in cloned repo.`,
       );
     }
-    return candidate;
+    return [candidate];
   }
 
   if (skillFilter) {
@@ -226,34 +231,27 @@ async function resolveSkillDir(
         `No SKILL.md with name "${skillFilter}" found in cloned repo.`,
       );
     }
-    return match;
+    return [match];
   }
 
   // Conventional: <clone>/skills/<repoName>/SKILL.md
   const conventional = join(cloneDir, "skills", repoName);
-  if (existsSync(join(conventional, "SKILL.md"))) return conventional;
+  if (existsSync(join(conventional, "SKILL.md"))) return [conventional];
 
-  // Multi-skill repo: scan `skills/` for skill directories. If exactly one
-  // skill exists, use it; if several do, the choice is ambiguous so require a
-  // `@skill-name` filter or tree-URL subpath.
+  // Multi-skill repo: install every skill directory under `skills/`.
   const skillsDir = join(cloneDir, "skills");
   if (existsSync(skillsDir)) {
-    const skillDirs = readdirSync(skillsDir).filter((entry) =>
-      existsSync(join(skillsDir, entry, "SKILL.md")),
-    );
-    if (skillDirs.length === 1) return join(skillsDir, skillDirs[0]);
-    if (skillDirs.length > 1) {
-      throw new Error(
-        `Repo contains multiple skills (${skillDirs.join(", ")}). Pick one with "owner/repo@<skill-name>" or a tree-URL subpath.`,
-      );
-    }
+    const skillDirs = readdirSync(skillsDir)
+      .filter((entry) => existsSync(join(skillsDir, entry, "SKILL.md")))
+      .map((entry) => join(skillsDir, entry));
+    if (skillDirs.length > 0) return skillDirs;
   }
 
   // Root-level fallback: <clone>/SKILL.md
-  if (existsSync(join(cloneDir, "SKILL.md"))) return cloneDir;
+  if (existsSync(join(cloneDir, "SKILL.md"))) return [cloneDir];
 
   throw new Error(
-    `No SKILL.md found in cloned repo. Expected it at "skills/${repoName}/SKILL.md", a single skill under "skills/", or the repo root.`,
+    `No SKILL.md found in cloned repo. Expected it at "skills/${repoName}/SKILL.md", under "skills/", or the repo root.`,
   );
 }
 

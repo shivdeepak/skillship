@@ -125,7 +125,10 @@ skillship install ./my-skill -a cursor -a claude-code
 # GitHub shorthand — clones and installs in one step
 npx skillship@latest install shivdeepak/knowledge-base-builder -a cursor -a claude-code
 
-# GitHub shorthand with skill-name filter (multi-skill repos)
+# Bare owner/repo installs ALL skills under the repo's skills/ directory
+npx skillship@latest install shivdeepak/skillship
+
+# GitHub shorthand with skill-name filter (install just one from a multi-skill repo)
 npx skillship@latest install vercel-labs/agent-skills@frontend-design
 
 # Subpath inside a repo

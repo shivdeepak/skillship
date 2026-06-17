@@ -23,7 +23,7 @@ Copy this checklist and track progress:
 Determine where the skill lives. Accepted formats:
 
 ```bash
-owner/repo                          # GitHub shorthand
+owner/repo                          # GitHub shorthand (installs ALL skills under skills/)
 owner/repo@skill-name               # filter to a specific skill by name
 https://gitlab.com/org/repo/-/tree/main/skills/my-skill
 git@github.com:org/repo.git

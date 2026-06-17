@@ -26,12 +26,13 @@ export async function installCommand(
   options: InstallOptions,
 ): Promise<number> {
   let cleanup: (() => void) | undefined;
+  let dirs = [dir];
 
   if (isRemoteRef(dir)) {
     process.stdout.write(`Fetching remote skill: ${dir}\n`);
     try {
       const fetched = await fetchRemoteSkill(dir);
-      dir = fetched.localDir;
+      dirs = fetched.localDirs;
       cleanup = fetched.cleanup;
     } catch (err) {
       process.stderr.write(
@@ -41,57 +42,71 @@ export async function installCommand(
     }
   }
 
+  try {
+    if (dirs.length > 1) {
+      process.stdout.write(`Installing ${dirs.length} skills:\n`);
+    }
+    let lastCode = 0;
+    for (const d of dirs) {
+      const code = await installOne(d, options);
+      if (code !== 0) lastCode = code;
+    }
+    return lastCode;
+  } finally {
+    cleanup?.();
+  }
+}
+
+async function installOne(
+  dir: string,
+  options: InstallOptions,
+): Promise<number> {
   let loaded;
   try {
     loaded = await loadSkill(dir);
   } catch (err) {
-    cleanup?.();
     process.stderr.write(
       `Error: ${err instanceof Error ? err.message : String(err)}\n`,
     );
     return 1;
   }
 
-  try {
-    const requested = options.agent && (Array.isArray(options.agent) ? options.agent.length > 0 : true)
+  const requested = options.agent && (Array.isArray(options.agent) ? options.agent.length > 0 : true)
       ? (Array.isArray(options.agent)
           ? options.agent.flatMap((a) => a.split(",")).map((a) => a.trim()).filter(Boolean)
           : options.agent.split(",").map((a) => a.trim()).filter(Boolean))
       : DEFAULT_AGENTS;
 
-    const uploadOnly = requested.filter((a) => UPLOAD_ONLY.has(a));
-    const filesystem = requested.filter((a) => !UPLOAD_ONLY.has(a));
+  const uploadOnly = requested.filter((a) => UPLOAD_ONLY.has(a));
+  const filesystem = requested.filter((a) => !UPLOAD_ONLY.has(a));
 
-    if (uploadOnly.length > 0) {
-      printUploadInstructions(uploadOnly, String(loaded.parsed.frontmatter.name));
-    }
-
-    if (filesystem.length === 0) return 0;
-
-    if (!isAvailable("npx")) {
-      process.stderr.write(
-        "Error: `npx` not found. Install Node.js (>=18). Run `skillship doctor`.\n",
-      );
-      return 1;
-    }
-
-    const argv = buildSkillsAddArgv({
-      dir: loaded.dir,
-      agents: filesystem,
-      global: options.global,
-      copy: options.copy,
-    });
-    process.stdout.write(`Running: npx ${argv.join(" ")}\n`);
-    const code = await run("npx", argv);
-
-    if (code === 0 && filesystem.includes("cursor")) {
-      installCursorExtras(loaded.dir, options.global ?? false);
-    }
-
-    return code;
-  } finally {
-    cleanup?.();
+  if (uploadOnly.length > 0) {
+    printUploadInstructions(uploadOnly, String(loaded.parsed.frontmatter.name));
   }
+
+  if (filesystem.length === 0) return 0;
+
+  if (!isAvailable("npx")) {
+    process.stderr.write(
+      "Error: `npx` not found. Install Node.js (>=18). Run `skillship doctor`.\n",
+    );
+    return 1;
+  }
+
+  const argv = buildSkillsAddArgv({
+    dir: loaded.dir,
+    agents: filesystem,
+    global: options.global,
+    copy: options.copy,
+  });
+  process.stdout.write(`Running: npx ${argv.join(" ")}\n`);
+  const code = await run("npx", argv);
+
+  if (code === 0 && filesystem.includes("cursor")) {
+    installCursorExtras(loaded.dir, options.global ?? false);
+  }
+
+  return code;
 }
 
 /**

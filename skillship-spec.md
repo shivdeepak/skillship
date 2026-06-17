@@ -141,16 +141,17 @@ unzips the output and asserts every entry sits under a `<skill-name>/` segment.
   shallow
   to a temp directory, installed from there, then cleaned up. `git` must be on
   PATH.
-- Remote skill resolution: a tree-URL subpath or `@skill-name` filter wins;
-  otherwise `skills/<repoName>/` is tried, then a lone skill under `skills/`. A
-  repo with multiple skills under `skills/` requires `@skill-name` or a subpath
-  to disambiguate.
+- Remote skill resolution: a tree-URL subpath or `@skill-name` filter wins and
+  installs exactly one skill; otherwise `skills/<repoName>/` is tried, then
+  every skill under `skills/`. A bare `owner/repo` with multiple skills installs
+  all of them; use `@skill-name` or a subpath to install just one.
 - For filesystem agents (Cursor, Claude Code, etc.), shell out to the ecosystem
   tool rather than copying by hand:
   ```
   npx skills add <dir> [--global] [--copy] -a <agent...>
   ```
-Default agents when `-a` omitted: -a `cursor` -a `claude-code`. Map `--global` to
+Default agents when `-a` omitted: -a `cursor` -a `claude-code`. Map `--global`
+to
 `npx skills` global flag and `--copy` to its copy flag.
 - When installing for `cursor`, also deploy the skill's Cursor extras if
   present:
