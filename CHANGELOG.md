@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.4](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.3...skillship-v1.3.4) (2026-06-17)
+
+
+### Documentation
+
+* enhance README and SKILL.md for nested skill support ([140c1c8](https://github.com/shivdeepak/skillship/commit/140c1c80067243514fd2a81e8f6c8c69fdc50c44))
+
 ## [1.3.3](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.2...skillship-v1.3.3) (2026-06-17)
 
 
