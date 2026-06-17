@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.2](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.1...skillship-v1.3.2) (2026-06-17)
+
+
+### Documentation
+
+* enhance SKILL.md and README with installation instructions ([a34cbd3](https://github.com/shivdeepak/skillship/commit/a34cbd33bba22c23ce4bff5eb25b6bc9b7c1bccd))
+* update command usage in README and templates to use npx skillship@latest ([2138f79](https://github.com/shivdeepak/skillship/commit/2138f7983a65f252a2e290cd32b4161a428f606d))
+
 ## [1.3.1](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.0...skillship-v1.3.1) (2026-06-17)
 
 
