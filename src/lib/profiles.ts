@@ -51,9 +51,28 @@ function descriptionMax(profile: ProfileName): number {
   return DESCRIPTION_MAX[profile];
 }
 
+/**
+ * A skill's `name` must line up with its on-disk location. The `:` namespace
+ * separator maps to a nested folder (`skillship:author` → `.../skillship/author`),
+ * so the trailing path segments must equal the `:`-split name segments. The
+ * legacy flat forms — folder named for the literal name or its `:` → `-`
+ * variant — are still accepted.
+ */
+function nameMatchesFolder(name: string, skillDir: string): boolean {
+  const folder = basename(skillDir);
+  if (folder === name || folder === name.replaceAll(":", "-")) return true;
+
+  const nameSegs = name.split(":");
+  if (nameSegs.length < 2) return false;
+  const pathSegs = skillDir.split(/[\\/]+/).filter(Boolean);
+  if (pathSegs.length < nameSegs.length) return false;
+  const tail = pathSegs.slice(-nameSegs.length);
+  return tail.every((seg, i) => seg === nameSegs[i]);
+}
+
 function checkName(
   fm: Frontmatter,
-  folderName: string,
+  skillDir: string,
   findings: Finding[],
 ): void {
   const name = typeof fm.name === "string" ? fm.name : undefined;
@@ -72,14 +91,11 @@ function checkName(
       message: `\`name\` "${name}" must be lowercase letters, numbers, and single hyphens, optionally namespaced with \`:\` (e.g. "skillship:author").`,
     });
   }
-  // A namespaced name keeps its `:`, but the directory may use `-` instead
-  // (colons are not portable in paths). Accept the folder matching either the
-  // literal name or its directory-safe (`:` → `-`) form.
-  if (name !== folderName && name.replaceAll(":", "-") !== folderName) {
+  if (!nameMatchesFolder(name, skillDir)) {
     findings.push({
       severity: "error",
       check: "name-matches-folder",
-      message: `\`name\` "${name}" must match the parent folder "${folderName}" (\`:\` may be written as \`-\`).`,
+      message: `\`name\` "${name}" must match its folder; \`:\` maps to a nested folder (e.g. "skillship:author" → "skillship/author").`,
     });
   }
 }
@@ -131,9 +147,8 @@ export function validateProfile(
   profile: ProfileName,
 ): ValidationResult {
   const findings: Finding[] = [];
-  const folderName = basename(skillDir);
 
-  checkName(skill.frontmatter, folderName, findings);
+  checkName(skill.frontmatter, skillDir, findings);
   checkDescription(skill.frontmatter, descriptionMax(profile), findings);
   checkBody(skill.body, findings);
 

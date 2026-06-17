@@ -17,7 +17,7 @@ npx skills add <owner>/<repo>
 
 ### Install into Claude Web or Cowork (upload a `.skill` file)
 
-1. Download `{{dir}}.skill` from this repo's
+1. Download `{{file}}.skill` from this repo's
    [Releases](https://github.com/<owner>/<repo>/releases/latest), or build it
    yourself with `npx skillship@latest package {{dir}}`.
 2. Upload the `.skill` file:
@@ -30,7 +30,7 @@ npx skills add <owner>/<repo>
 
 - Validate: `npx skillship@latest validate {{dir}} --profile all`
 - Package: `npx skillship@latest package {{dir}}` (produces
-  `dist/{{dir}}.skill`)
+  `dist/{{file}}.skill`)
 - Install locally: `npx skillship@latest install {{dir}} -a cursor -a
   claude-code`
 
@@ -39,7 +39,7 @@ npx skills add <owner>/<repo>
 This repo auto-releases with
 [release-please](https://github.com/googleapis/release-please-action) using
 [Conventional Commits](https://www.conventionalcommits.org/). Merging the
-generated release PR publishes `{{dir}}.skill` to a GitHub Release.
+generated release PR publishes `{{file}}.skill` to a GitHub Release.
 
 > Enable **Settings -> Actions -> Workflow permissions**: "Read and write" and
 > "Allow GitHub Actions to create and approve pull requests".

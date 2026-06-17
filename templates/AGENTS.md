@@ -6,20 +6,20 @@ Claude Code, Claude Web, and Claude Cowork.
 ## Layout
 
 - `skills/{{dir}}/SKILL.md` — the skill itself (source of truth).
-- `cursor/rules/{{dir}}.mdc` — Cursor rule; auto-installed by `skillship
+- `cursor/rules/{{file}}.mdc` — Cursor rule; auto-installed by `skillship
   install -a cursor`.
 - `cursor/hooks.json` — Cursor hook entries; merged into `~/.cursor/hooks.json`
   on install.
 - `release-please-config.json`, `.release-please-manifest.json`, `version.txt` —
   release automation via release-please + Conventional Commits.
 - `.github/workflows/validate.yml` — validates the skill on PRs/pushes.
-- `.github/workflows/release.yml` — cuts releases and uploads `{{dir}}.skill`.
+- `.github/workflows/release.yml` — cuts releases and uploads `{{file}}.skill`.
 
 ## Conventions
 
 - Use Conventional Commits (`feat:`, `fix:`, `docs:`, ...). `feat`/`fix` bump
   the
-  version; merging the release PR publishes `{{dir}}.skill` to a GitHub
+  version; merging the release PR publishes `{{file}}.skill` to a GitHub
   Release.
 - Keep the `description` in `skills/{{dir}}/SKILL.md` <= 200 chars so it
   uploads to

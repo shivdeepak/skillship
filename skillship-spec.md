@@ -69,8 +69,10 @@ skillship doctor
 ```
 
 - `<dir>` defaults to `.`. `validate` and `package` discover skills under it: a
-  lone `SKILL.md`, a bare name under `skills/`, else every skill under
-  `skills/`. `validate` checks each; `package` bundles them.
+  lone `SKILL.md`, a bare name under `skills/` (with `:` mapped to a nested
+  folder, e.g. `skillship:author` → `skills/skillship/author/`), else every
+  skill under `skills/` — recursing so nested sub-skills are found too.
+  `validate` checks each; `package` bundles them.
 - `install`'s `[source]` is a local path (default `.`) **or** a remote ref
   (`owner/repo`, `owner/repo@skill-name`, a GitHub/GitLab URL, or any git URL);
   remote refs are `git clone --depth 1`'d to a temp dir, installed, then
@@ -91,7 +93,7 @@ Parse the `SKILL.md` YAML frontmatter (`name`, `description`, optional
 | Check | spec | cursor | claude-web | claude-cowork |
 | --- | --- | --- | --- | --- |
 | `name` present, lowercase/numbers/hyphens, no leading/trailing/`--`, optional `:`-namespacing (e.g. `skillship:author`) | yes | yes | yes | yes |
-| `name` matches parent folder | yes | yes | yes | yes |
+| `name` matches its folder (`:` maps to a nested folder, e.g. `skillship:author` → `skillship/author`) | yes | yes | yes | yes |
 | `description` non-empty, no `<`/`>` (XML) | yes | yes | yes | yes |
 | `description` length | <= 1024 | <= 1024 | **<= 200** | **<= 200** |
 | Body recommended <= 500 lines | warn | warn | warn | warn |
@@ -110,22 +112,23 @@ mis-joining. (This was a real bug in the origin `validate.py` — handle it.)
 `skillship package [dir]` (default `dir` = `.`):
 
 1. Discover the skills to bundle: if `<dir>/SKILL.md` exists it is a single
-   skill; else bundle every immediate subdir of `<dir>/skills/` (or of `<dir>`)
-   that contains a `SKILL.md`.
+   skill (plus any nested sub-skills under it); else bundle every skill under
+   `<dir>/skills/` (or `<dir>`), recursing into nested sub-skills.
 2. Run `validate --profile all` on every discovered skill first; abort if any
    fails.
 3. Produce a single `<out>/<name>.skill` (default `<out>` = `dist/`), a zip
-   where each skill lives under its own `<skill-name>/` folder at the root —
-   i.e. entries are `<skill-name>/SKILL.md`, `<skill-name>/...`. Claude upload
-   rejects archives with files at the zip root.
+   where each skill lives under its own `<skill-name>/` folder. `:` maps to `/`
+   so a sub-skill nests inside its parent (e.g. `skillship:author` →
+   `skillship/author/`). Nested sub-skills are pruned from their parent's file
+   walk so files are never duplicated. No entries sit at the zip root, which
+   Claude upload rejects.
 4. The bundle `<name>` is the lone skill's name, or for multiple skills their
    longest common prefix trimmed of a trailing `-`/`:` (e.g. `skillship`,
    `skillship:author`, `skillship:install` → `skillship`), falling back to the
    project folder name.
-5. `:` is rewritten to `-` in zip folder names and the output filename, since
-   `:` is illegal in filenames on Windows (and archivers treat a leading
-   `prefix:` as a drive). So `skillship:author` is stored as
-   `skillship-author/`.
+5. In the output *filename*, `:` and `/` are rewritten to `-`, since neither is
+   portable in filenames on Windows (and archivers treat a leading `prefix:` as
+   a drive). So a lone `skillship:author` packages to `skillship-author.skill`.
 6. Exclude `__pycache__/`, `.DS_Store`, `node_modules/`, `dist/`, `.git/`.
 7. The `.skill` file is a normal zip with a renamed extension.
 
@@ -240,7 +243,9 @@ skillship/
     README.md
     SKILL.md
   skills/skillship/         # bundled Agent Skill (the /skillship skill)
-    SKILL.md
+    SKILL.md                # parent skill: delegates to the sub-skills below
+    author/SKILL.md         # skillship:author sub-skill
+    install/SKILL.md        # skillship:install sub-skill
   test/
     fixtures/
     *.test.ts

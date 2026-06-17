@@ -37,12 +37,14 @@ async function writeSkill(dir: string, name: string): Promise<void> {
 }
 
 describe("package (bundle)", () => {
-  it("bundles every skill under skills/ into one zip named by common prefix", async () => {
+  it("bundles nested sub-skills under one zip named by common prefix", async () => {
     const work = await mkdtemp(join(tmpdir(), "skillship-pkg-"));
     tmpDirs.push(work);
+    // Sub-skills nest under their parent on disk (skillship:author lives at
+    // skills/skillship/author).
     await writeSkill(join(work, "skills", "skillship"), "skillship");
-    await writeSkill(join(work, "skills", "skillship:author"), "skillship:author");
-    await writeSkill(join(work, "skills", "skillship:install"), "skillship:install");
+    await writeSkill(join(work, "skills", "skillship", "author"), "skillship:author");
+    await writeSkill(join(work, "skills", "skillship", "install"), "skillship:install");
 
     const dist = join(work, "dist");
     const code = await packageCommand(work, { out: dist });
@@ -52,10 +54,13 @@ describe("package (bundle)", () => {
     expect(existsSync(outPath)).toBe(true);
 
     const entries = await listEntries(outPath);
-    // `:` is rewritten to `-` for portable, Windows-safe zip entries.
+    // `:` maps to `/` so sub-skills nest inside the parent's folder.
     expect(entries).toContain("skillship/SKILL.md");
-    expect(entries).toContain("skillship-author/SKILL.md");
-    expect(entries).toContain("skillship-install/SKILL.md");
+    expect(entries).toContain("skillship/author/SKILL.md");
+    expect(entries).toContain("skillship/install/SKILL.md");
+    // The parent's SKILL.md is emitted exactly once (not duplicated by the
+    // nested-sub-skill file walk).
+    expect(entries.filter((e) => e === "skillship/SKILL.md")).toHaveLength(1);
     // No files at the zip root.
     for (const e of entries) expect(e.includes("/")).toBe(true);
   });

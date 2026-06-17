@@ -71,11 +71,21 @@ describe("namespaced skill names", () => {
     expect(NAME_RE.test("Bad:Name")).toBe(false);
   });
 
-  it("passes the name check when the folder matches a namespaced name", () => {
+  it("passes the name check when nested folders match a namespaced name", () => {
     const parsed = parseSkill(
       "---\nname: skillship:author\ndescription: A valid namespaced skill.\n---\nBody.",
     );
-    const result = validateProfile(parsed, "/tmp/skillship:author", "all");
-    expect(result.ok).toBe(true);
+    // `:` maps to nested folders: skillship:author lives at skillship/author.
+    expect(validateProfile(parsed, "/tmp/skills/skillship/author", "all").ok).toBe(true);
+    // The legacy flat form (folder named for the literal name) still passes.
+    expect(validateProfile(parsed, "/tmp/skillship:author", "all").ok).toBe(true);
+  });
+
+  it("fails the name check when the nested path does not match the name", () => {
+    const parsed = parseSkill(
+      "---\nname: skillship:author\ndescription: A valid namespaced skill.\n---\nBody.",
+    );
+    const result = validateProfile(parsed, "/tmp/skills/other/author", "all");
+    expect(result.ok).toBe(false);
   });
 });
