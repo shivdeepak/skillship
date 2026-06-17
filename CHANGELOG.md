@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.1](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.0...skillship-v1.3.1) (2026-06-17)
+
+
+### Documentation
+
+* update README and SKILL.md files for clarity and command usage ([3e9b7e0](https://github.com/shivdeepak/skillship/commit/3e9b7e0d3945f4a91a9cfa753a9ae48ba0291946))
+* update README and templates for directory-safe skill names ([a7186c8](https://github.com/shivdeepak/skillship/commit/a7186c80e2dfca615e85dfcd1f00d27b5c4f4eef))
+
 ## [1.3.0](https://github.com/shivdeepak/skillship/compare/skillship-v1.2.3...skillship-v1.3.0) (2026-06-17)
 
 
