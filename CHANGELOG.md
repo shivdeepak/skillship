@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/shivdeepak/skillship/compare/skillship-v1.2.3...skillship-v1.3.0) (2026-06-17)
+
+
+### Features
+
+* enhance skillship CLI with namespaced skills and improved packaging ([b6afe1f](https://github.com/shivdeepak/skillship/commit/b6afe1fa7290f5e4669abec2380d556c8e1dd678))
+
+
+### Documentation
+
+* update README and templates for validate command enhancements ([398baea](https://github.com/shivdeepak/skillship/commit/398baea902d7a53e84300e9155e718397db06a3c))
+
 ## [1.2.3](https://github.com/shivdeepak/skillship/compare/skillship-v1.2.2...skillship-v1.2.3) (2026-06-16)
 
 
