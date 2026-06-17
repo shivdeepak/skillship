@@ -33,9 +33,13 @@ async function renderTemplate(file: string, name: string): Promise<string> {
   return raw.replaceAll("{{name}}", name);
 }
 
-async function emit(target: string, content: string): Promise<void> {
+/** Write `content` to `target` only when it does not already exist. Returns
+ * true if a file was written, false if an existing file was left untouched. */
+async function emit(target: string, content: string): Promise<boolean> {
+  if (existsSync(target)) return false;
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, content);
+  return true;
 }
 
 export async function initCommand(
@@ -59,11 +63,11 @@ export async function initCommand(
     return 1;
   }
 
+  // Always scaffold under skills/<name>/. Re-running on an existing skill is
+  // allowed: emit() skips files that already exist, so missing scaffolding
+  // (CI, snippets, repo files) is filled in without touching the authored
+  // SKILL.md.
   const skillDir = join(root, "skills", skillName);
-  if (existsSync(skillDir)) {
-    process.stderr.write(`Error: skill directory "${skillName}" already exists.\n`);
-    return 1;
-  }
 
   const writes: Array<[string, string]> = [];
 
@@ -102,12 +106,15 @@ export async function initCommand(
     ]);
   }
 
+  let created = 0;
   for (const [target, content] of writes) {
-    await emit(target, content);
+    if (await emit(target, content)) created += 1;
   }
 
+  const skipped = writes.length - created;
+  const suffix = skipped > 0 ? `, ${skipped} already present` : "";
   const hint = options.newDir ? `  cd ${skillName}\n` : "";
-  process.stdout.write(`Scaffolded skills/${skillName}/ (${writes.length} files)\n`);
+  process.stdout.write(`Scaffolded skills/${skillName}/ (${created} files written${suffix})\n`);
   process.stdout.write(hint);
   process.stdout.write(`  npx skillship validate ${skillName} --profile all\n`);
   return 0;

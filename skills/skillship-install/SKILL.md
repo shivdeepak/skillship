@@ -47,7 +47,7 @@ Ask the user where to install (use AskQuestion). Targets:
 **Filesystem agents** (e.g. Cursor, Claude Code):
 
 ```bash
-npx skillship install <source> -a cursor -a claude-code
+npx skillship@latest install <source> -a cursor -a claude-code
 ```
 
 - `--global` installs for all projects instead of the current one.
@@ -57,7 +57,7 @@ npx skillship install <source> -a cursor -a claude-code
 locally first, then guide the user to upload:
 
 ```bash
-npx skillship package <local-dir>   # -> dist/<name>.skill
+npx skillship@latest package <local-dir>   # -> dist/<name>.skill
 ```
 
 - Claude Web: Settings → Capabilities → Upload skill → enable toggle.

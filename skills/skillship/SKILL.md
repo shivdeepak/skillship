@@ -19,7 +19,8 @@ Based on user intent, read and follow the appropriate skill:
 
 ## Invoking the CLI
 
-Prefer `npx skillship <command>`. If `npx skillship` cannot resolve the package
+Prefer `npx skillship@latest <command>`. If `npx skillship@latest` cannot
+resolve the package
 (not published / offline), run it from a local checkout instead:
 
 ```bash
@@ -27,5 +28,6 @@ npm run build            # in the skillship repo, produces dist/cli.js
 node dist/cli.js <command>
 ```
 
-Run `npx skillship doctor` to verify the environment (Node >= 18, npx; optional
+Run `npx skillship@latest doctor` to verify the environment (Node >= 18, npx;
+optional
 `gh` and `agentskills`).

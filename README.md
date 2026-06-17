@@ -177,6 +177,10 @@ in `skills/<name>/SKILL.md`, repo files at the root). Pass `--new-dir` to create
 a new `<name>/` project directory instead. The layout below is relative to that
 root.
 
+Re-running `init` on an existing skill is safe: it writes only missing files and
+leaves existing ones (including your authored `SKILL.md`) untouched, so you can
+backfill `--ci` or `--snippets` scaffolding later.
+
 Scaffolded layout:
 
 ```

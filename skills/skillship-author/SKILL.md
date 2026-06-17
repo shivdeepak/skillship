@@ -27,10 +27,12 @@ A skill is a directory containing a `SKILL.md`. Find one in the project (search
 for `SKILL.md`). Determine `<dir>` = the folder that directly contains it.
 
 - **Already exists** → go to Step 2.
-- **Does not exist** → scaffold a fresh skill:
+- **Does not exist** → scaffold a fresh skill. Always run `init` from the
+  **project root** (it writes the skill body to `skills/<name>/SKILL.md` and
+  repo files at the root):
 
 ```bash
-npx skillship init <name> --ci --snippets
+npx skillship@latest init <name> --ci --snippets
 ```
 
 Then author the `SKILL.md` body following the `create-skill` skill's rules
@@ -40,13 +42,12 @@ Then author the `SKILL.md` body following the `create-skill` skill's rules
 ### Step 2 — Add missing scaffolding to an existing skill
 
 If the user already has a `SKILL.md` but is missing CI workflows, Cursor
-snippets, or other boilerplate, run `init` **without `--new-dir`** from inside
-the skill's directory. This fills in only the missing files and leaves the
-existing `SKILL.md` untouched:
+snippets, or other boilerplate, re-run `init` **from the project root** with the
+skill's `name`. It fills in only the missing files and leaves existing files
+(including the authored `SKILL.md`) untouched:
 
 ```bash
-cd <dir>
-npx skillship init <name> --ci [--snippets]
+npx skillship@latest init <name> --ci [--snippets]
 ```
 
 - `--ci` adds `.github/workflows/validate.yml` and `release.yml` plus
@@ -59,7 +60,7 @@ npx skillship init <name> --ci [--snippets]
 ### Step 3 — Validate
 
 ```bash
-npx skillship validate <dir> --profile all
+npx skillship@latest validate <dir> --profile all
 ```
 
 `--profile all` is the strictest (Claude's 200-char description cap). Use
@@ -85,7 +86,7 @@ Ask the user where to publish (use AskQuestion). Targets:
 **Filesystem agents** (e.g. Cursor, Claude Code):
 
 ```bash
-npx skillship install <dir> -a cursor,claude-code
+npx skillship@latest install <dir> -a cursor -a claude-code
 ```
 
 Add `--global` to install for all projects, `--copy` to copy instead of
@@ -94,7 +95,7 @@ symlink.
 **Upload-only surfaces** (e.g. Claude Web / Cowork):
 
 ```bash
-npx skillship package          # bundles every skill under skills/ -> dist/<name>.skill
+npx skillship@latest package          # bundles every skill under skills/ -> dist/<name>.skill
 ```
 
 `package` validates each skill, then bundles them all into one `.skill` zip.
