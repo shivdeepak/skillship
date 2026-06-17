@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.6](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.5...skillship-v1.3.6) (2026-06-17)
+
+
+### Documentation
+
+* enhance installation process and CLI options in README and SKILL.md ([d2ce528](https://github.com/shivdeepak/skillship/commit/d2ce528172901f5b429856c6bd8a738c804cdf0a))
+
 ## [1.3.5](https://github.com/shivdeepak/skillship/compare/skillship-v1.3.4...skillship-v1.3.5) (2026-06-17)
 
 
