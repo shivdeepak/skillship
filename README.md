@@ -40,7 +40,7 @@ Add `-a <agent>` (e.g. `-a cursor`, repeatable) to target specific agents, or
 Or run the CLI directly with `npx` (requires Node.js >= 18):
 
 ```bash
-npx skillship <command>
+npx skillship@latest <command>
 ```
 
 ## Commands
@@ -123,21 +123,21 @@ filename (so `skillship:author` is stored as `skillship-author/`).
 skillship install ./my-skill -a cursor -a claude-code
 
 # GitHub shorthand — clones and installs in one step
-npx skillship install shivdeepak/knowledge-base-builder -a cursor -a claude-code
+npx skillship@latest install shivdeepak/knowledge-base-builder -a cursor -a claude-code
 
 # GitHub shorthand with skill-name filter (multi-skill repos)
-npx skillship install vercel-labs/agent-skills@frontend-design
+npx skillship@latest install vercel-labs/agent-skills@frontend-design
 
 # Subpath inside a repo
-npx skillship install org/monorepo/packages/my-skill
+npx skillship@latest install org/monorepo/packages/my-skill
 
 # Full GitHub or GitLab URL (with optional branch/path)
-npx skillship install https://github.com/org/repo/tree/main/skills/my-skill
-npx skillship install https://gitlab.com/org/repo/-/tree/main/skills/my-skill
+npx skillship@latest install https://github.com/org/repo/tree/main/skills/my-skill
+npx skillship@latest install https://gitlab.com/org/repo/-/tree/main/skills/my-skill
 
 # Any git URL (SSH, self-hosted, etc.)
-npx skillship install git@github.com:org/repo.git
-npx skillship install git@git.company.com:team/skills.git
+npx skillship@latest install git@github.com:org/repo.git
+npx skillship@latest install git@git.company.com:team/skills.git
 ```
 
 For remote sources, skillship runs `git clone --depth 1` into a temp directory,

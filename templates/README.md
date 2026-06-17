@@ -5,13 +5,15 @@ Claude Code, Claude Web, and Claude Cowork.
 
 ## Develop
 
-- Validate: `npx skillship validate {{dir}} --profile all`
-- Package: `npx skillship package {{dir}}` (produces `dist/{{dir}}.skill`)
-- Install locally: `npx skillship install {{dir}} -a cursor -a claude-code`
+- Validate: `npx skillship@latest validate {{dir}} --profile all`
+- Package: `npx skillship@latest package {{dir}}` (produces
+  `dist/{{dir}}.skill`)
+- Install locally: `npx skillship@latest install {{dir}} -a cursor -a
+  claude-code`
 
 ## Upload to Claude
 
-1. `npx skillship package {{dir}}`
+1. `npx skillship@latest package {{dir}}`
 2. Upload `dist/{{dir}}.skill`:
    - Claude Web: Settings -> Capabilities -> Upload skill -> enable toggle.
    - Claude Cowork: Customize -> Skills -> Upload (desktop app only).

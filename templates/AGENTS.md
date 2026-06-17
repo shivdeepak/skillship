@@ -29,6 +29,6 @@ Claude Code, Claude Web, and Claude Cowork.
 
 ## Commands
 
-- `npx skillship validate --profile all`
-- `npx skillship package`
-- `npx skillship install {{dir}} -a cursor -a claude-code`
+- `npx skillship@latest validate --profile all`
+- `npx skillship@latest package`
+- `npx skillship@latest install {{dir}} -a cursor -a claude-code`
