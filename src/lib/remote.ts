@@ -187,7 +187,6 @@ export async function fetchRemoteSkill(
 
     const localDirs = await resolveSkillDirs(
       cloneTarget,
-      repoName,
       subpath,
       skillFilter,
     );
@@ -204,13 +203,12 @@ export async function fetchRemoteSkill(
  * Resolution order:
  *  1. If `subpath` given → `<clone>/<subpath>` (must contain SKILL.md)
  *  2. If `skillFilter` given → walk tree for SKILL.md whose `name` field matches
- *  3. Standard convention → `<clone>/skills/<repoName>/SKILL.md`
- *  4. Multi-skill repo → every skill under `<clone>/skills/`
- *  5. Fallback → `<clone>/SKILL.md`
+ *  3. Every skill under `<clone>/skills/` (so sibling sub-skills like
+ *     `skillship` + `skillship-author` install together)
+ *  4. Fallback → `<clone>/SKILL.md`
  */
 async function resolveSkillDirs(
   cloneDir: string,
-  repoName: string,
   subpath?: string,
   skillFilter?: string,
 ): Promise<string[]> {
@@ -234,16 +232,16 @@ async function resolveSkillDirs(
     return [match];
   }
 
-  // Conventional: <clone>/skills/<repoName>/SKILL.md
-  const conventional = join(cloneDir, "skills", repoName);
-  if (existsSync(join(conventional, "SKILL.md"))) return [conventional];
-
-  // Multi-skill repo: install every skill directory under `skills/`.
+  // Install every skill directory under `skills/`. A repo with a main skill and
+  // its sibling sub-skills (e.g. `skillship`, `skillship-author`,
+  // `skillship-install`) installs all of them; use `@skill-name` or a subpath to
+  // narrow to one.
   const skillsDir = join(cloneDir, "skills");
   if (existsSync(skillsDir)) {
     const skillDirs = readdirSync(skillsDir)
       .filter((entry) => existsSync(join(skillsDir, entry, "SKILL.md")))
-      .map((entry) => join(skillsDir, entry));
+      .map((entry) => join(skillsDir, entry))
+      .sort();
     if (skillDirs.length > 0) return skillDirs;
   }
 
@@ -251,7 +249,7 @@ async function resolveSkillDirs(
   if (existsSync(join(cloneDir, "SKILL.md"))) return [cloneDir];
 
   throw new Error(
-    `No SKILL.md found in cloned repo. Expected it at "skills/${repoName}/SKILL.md", under "skills/", or the repo root.`,
+    `No SKILL.md found in cloned repo. Expected it under "skills/" or at the repo root.`,
   );
 }
 

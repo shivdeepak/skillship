@@ -11,10 +11,7 @@ const EXCLUDED_DIRS = new Set([
 ]);
 const EXCLUDED_FILES = new Set([".DS_Store"]);
 
-async function collectFiles(
-  root: string,
-  prune: Set<string>,
-): Promise<string[]> {
+async function collectFiles(root: string): Promise<string[]> {
   const out: string[] = [];
   async function walk(dir: string): Promise<void> {
     const entries = await readdir(dir, { withFileTypes: true });
@@ -22,10 +19,6 @@ async function collectFiles(
       const full = join(dir, entry.name);
       if (entry.isDirectory()) {
         if (EXCLUDED_DIRS.has(entry.name)) continue;
-        // Skip directories that are themselves a separate skill in the bundle;
-        // their files are emitted under their own (nested) folder instead of
-        // being duplicated inside the parent skill.
-        if (prune.has(full)) continue;
         await walk(full);
       } else if (entry.isFile()) {
         if (EXCLUDED_FILES.has(entry.name)) continue;
@@ -45,12 +38,12 @@ export interface BundleSkill {
 }
 
 /**
- * Folder path a skill occupies inside the zip. The `:` namespace separator
- * maps to a nested folder, so `skillship:author` is stored under
- * `skillship/author/` — directly inside its parent skill's `skillship/` folder.
+ * Folder path a skill occupies inside the zip. Skills are flat top-level
+ * folders; the `:` namespace separator maps to a hyphen, so `skillship:author`
+ * is stored under `skillship-author/` alongside its sibling skills.
  */
 function zipFolder(name: string): string {
-  return name.replace(/:/g, "/");
+  return name.replace(/:/g, "-");
 }
 
 /**
@@ -65,10 +58,9 @@ function fileSafeName(name: string): string {
 
 /**
  * Create a single `.skill` zip containing one or more skills. Each skill's
- * files are placed under its `<skill.name>/` folder (with `:` mapped to `/`, so
- * sub-skills nest inside their parent), and nested sub-skills are pruned from
- * their parent's file walk to avoid duplicate entries. The archive never has
- * files at the root. Returns the output path.
+ * files are placed under its own flat `<skill.name>/` folder (with `:` mapped
+ * to `-`, so sibling skills sit side by side). The archive never has files at
+ * the root. Returns the output path.
  */
 export async function packSkills(opts: {
   skills: BundleSkill[];
@@ -79,7 +71,6 @@ export async function packSkills(opts: {
   await mkdir(outDir, { recursive: true });
   const outPath = join(outDir, `${fileSafeName(bundleName)}.skill`);
 
-  const skillDirs = new Set(skills.map((s) => s.dir));
   const entries: Array<{ file: string; name: string }> = [];
   const folders = new Map<string, string>();
   for (const skill of skills) {
@@ -92,10 +83,7 @@ export async function packSkills(opts: {
     }
     folders.set(folder, skill.name);
 
-    const prune = new Set(
-      [...skillDirs].filter((d) => d !== skill.dir),
-    );
-    const files = await collectFiles(skill.dir, prune);
+    const files = await collectFiles(skill.dir);
     for (const file of files) {
       const rel = relative(skill.dir, file);
       entries.push({ file, name: `${folder}/${rel}` });

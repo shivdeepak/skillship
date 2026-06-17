@@ -1,9 +1,9 @@
 ---
-name: skillship:author
+name: skillship-author
 description: Author and publish an Agent Skill with the skillship CLI. Use when creating a new SKILL.md from scratch, converting an existing skill to portable, or publishing with CI.
 ---
 
-# skillship:author
+# skillship-author
 
 Drive the `skillship` CLI to author and publish a portable Agent Skill. Run the
 CLI for the user; do not ask them to run commands manually.
@@ -105,8 +105,8 @@ npx skillship@latest package          # bundles every skill under skills/ -> dis
 
 `package` validates each skill, then bundles them all into one `.skill` zip.
 `<name>` is the single skill's name or, for several skills, their common prefix
-(`skillship:author` + `skillship:install` → `skillship`); `:` becomes `-` in the
-zip. Then tell the user to upload `dist/<name>.skill`:
+(`skillship-author` + `skillship-install` → `skillship`). Then tell the user to
+upload `dist/<name>.skill`:
 - Claude Web: Settings → Capabilities → Upload skill → enable toggle.
 - Claude Cowork: Customize → Skills → Upload (desktop app only).
 

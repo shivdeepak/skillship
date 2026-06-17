@@ -1,9 +1,9 @@
 ---
-name: skillship:install
+name: skillship-install
 description: Install a remote Agent Skill via the skillship CLI. Use when installing a skill from a GitHub repo, GitLab URL, or SSH URL into Cursor, Claude Code, or Claude Web.
 ---
 
-# skillship:install
+# skillship-install
 
 Drive the `skillship install` CLI command to install a remote Agent Skill. Run
 the CLI for the user; do not ask them to run commands manually.

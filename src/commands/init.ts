@@ -61,10 +61,10 @@ export async function initCommand(
   }
 
   // A namespaced skill like "skillship:author" keeps its colon in the SKILL.md
-  // `name`. On disk the `:` maps to a nested folder (skills/skillship/author),
-  // while filenames and release assets (which can't hold `/`) use a hyphen
-  // ("skillship-author").
-  const dirPath = skillName.replaceAll(":", "/");
+  // `name`. On disk and in filenames the `:` maps to a hyphen, so the skill is
+  // a flat sibling directory (skills/skillship-author) that every harness can
+  // discover at the top level.
+  const dirPath = skillName.replaceAll(":", "-");
   const fileName = skillName.replaceAll(":", "-");
 
   // By default, scaffold into the current directory. With --new-dir, create

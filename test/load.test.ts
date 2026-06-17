@@ -39,6 +39,16 @@ describe("loadSkill", () => {
     expect(loaded.dir).toBe(join(process.cwd(), "skills", "demo"));
   });
 
+  it("resolves a namespaced name to its flat sibling folder (: -> -)", async () => {
+    await mkdir(join("skills", "demo-sub"), { recursive: true });
+    await writeFile(
+      join("skills", "demo-sub", "SKILL.md"),
+      "---\nname: demo:sub\ndescription: A demo sub skill.\n---\n# demo:sub\n",
+    );
+    const loaded = await loadSkill("demo:sub");
+    expect(loaded.dir).toBe(join(process.cwd(), "skills", "demo-sub"));
+  });
+
   it("prefers an explicit path over the skills/ fallback", async () => {
     await mkdir("demo", { recursive: true });
     await writeFile(join("demo", "SKILL.md"), SKILL);

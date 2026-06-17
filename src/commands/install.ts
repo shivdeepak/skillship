@@ -1,4 +1,5 @@
 import { loadSkill } from "../lib/load.js";
+import { discoverSkillDirs } from "../lib/discover.js";
 import { buildSkillsAddArgv, isAvailable, run } from "../lib/exec.js";
 import { fetchRemoteSkill, isRemoteRef } from "../lib/remote.js";
 import {
@@ -26,7 +27,7 @@ export async function installCommand(
   options: InstallOptions,
 ): Promise<number> {
   let cleanup: (() => void) | undefined;
-  let dirs = [dir];
+  let dirs: string[];
 
   if (isRemoteRef(dir)) {
     process.stdout.write(`Fetching remote skill: ${dir}\n`);
@@ -37,6 +38,16 @@ export async function installCommand(
     } catch (err) {
       process.stderr.write(
         `Error: ${err instanceof Error ? err.message : String(err)}\n`,
+      );
+      return 1;
+    }
+  } else {
+    // Local source: install every skill discovered under it, so a project root
+    // with several sibling skills installs them all (not just the first).
+    dirs = discoverSkillDirs(dir);
+    if (dirs.length === 0) {
+      process.stderr.write(
+        `Error: no SKILL.md found in ${dir} or under ${dir}/skills/.\n`,
       );
       return 1;
     }

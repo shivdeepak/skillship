@@ -52,22 +52,14 @@ function descriptionMax(profile: ProfileName): number {
 }
 
 /**
- * A skill's `name` must line up with its on-disk location. The `:` namespace
- * separator maps to a nested folder (`skillship:author` → `.../skillship/author`),
- * so the trailing path segments must equal the `:`-split name segments. The
- * legacy flat forms — folder named for the literal name or its `:` → `-`
- * variant — are still accepted.
+ * A skill's `name` must line up with its on-disk folder. Skills are flat,
+ * top-level directories, so the folder must equal the name (or its `:` → `-`
+ * variant, since `:` is not portable in directory names — `skillship:author`
+ * lives in `skillship-author/`).
  */
 function nameMatchesFolder(name: string, skillDir: string): boolean {
   const folder = basename(skillDir);
-  if (folder === name || folder === name.replaceAll(":", "-")) return true;
-
-  const nameSegs = name.split(":");
-  if (nameSegs.length < 2) return false;
-  const pathSegs = skillDir.split(/[\\/]+/).filter(Boolean);
-  if (pathSegs.length < nameSegs.length) return false;
-  const tail = pathSegs.slice(-nameSegs.length);
-  return tail.every((seg, i) => seg === nameSegs[i]);
+  return folder === name || folder === name.replaceAll(":", "-");
 }
 
 function checkName(
@@ -95,7 +87,7 @@ function checkName(
     findings.push({
       severity: "error",
       check: "name-matches-folder",
-      message: `\`name\` "${name}" must match its folder; \`:\` maps to a nested folder (e.g. "skillship:author" → "skillship/author").`,
+      message: `\`name\` "${name}" must match its folder; \`:\` maps to a hyphen (e.g. "skillship:author" → "skillship-author").`,
     });
   }
 }

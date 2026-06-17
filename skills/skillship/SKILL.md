@@ -14,8 +14,8 @@ Based on user intent, read and follow the appropriate skill:
 
 | User wants to… | Use skill |
 | --- | --- |
-| Create a new skill, convert an existing SKILL.md to portable, validate, or publish | `skillship:author` |
-| Install a skill from a remote repo (GitHub, GitLab, SSH) | `skillship:install` |
+| Create a new skill, convert an existing SKILL.md to portable, validate, or publish | `skillship-author` |
+| Install a skill from a remote repo (GitHub, GitLab, SSH) | `skillship-install` |
 
 ## Invoking the CLI
 

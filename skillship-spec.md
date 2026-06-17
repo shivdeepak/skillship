@@ -69,10 +69,12 @@ skillship doctor
 ```
 
 - `<dir>` defaults to `.`. `validate` and `package` discover skills under it: a
-  lone `SKILL.md`, a bare name under `skills/` (with `:` mapped to a nested
-  folder, e.g. `skillship:author` → `skills/skillship/author/`), else every
-  skill under `skills/` — recursing so nested sub-skills are found too.
-  `validate` checks each; `package` bundles them.
+  lone `SKILL.md`, a bare name under `skills/` (with `:` mapped to a hyphenated
+  sibling folder, e.g. `skillship:author` → `skills/skillship-author/`), else
+  every skill under `skills/`. Skills are flat, top-level directories — a
+  directory with a `SKILL.md` is a skill and is not descended into — so
+  sub-skills are siblings, not nested. `validate` checks each; `package` bundles
+  them.
 - `install`'s `[source]` is a local path (default `.`) **or** a remote ref
   (`owner/repo`, `owner/repo@skill-name`, a GitHub/GitLab URL, or any git URL);
   remote refs are `git clone --depth 1`'d to a temp dir, installed, then
@@ -93,7 +95,7 @@ Parse the `SKILL.md` YAML frontmatter (`name`, `description`, optional
 | Check | spec | cursor | claude-web | claude-cowork |
 | --- | --- | --- | --- | --- |
 | `name` present, lowercase/numbers/hyphens, no leading/trailing/`--`, optional `:`-namespacing (e.g. `skillship:author`) | yes | yes | yes | yes |
-| `name` matches its folder (`:` maps to a nested folder, e.g. `skillship:author` → `skillship/author`) | yes | yes | yes | yes |
+| `name` matches its folder (`:` maps to a hyphen, e.g. `skillship:author` → `skillship-author`) | yes | yes | yes | yes |
 | `description` non-empty, no `<`/`>` (XML) | yes | yes | yes | yes |
 | `description` length | <= 1024 | <= 1024 | **<= 200** | **<= 200** |
 | Body recommended <= 500 lines | warn | warn | warn | warn |
@@ -112,19 +114,18 @@ mis-joining. (This was a real bug in the origin `validate.py` — handle it.)
 `skillship package [dir]` (default `dir` = `.`):
 
 1. Discover the skills to bundle: if `<dir>/SKILL.md` exists it is a single
-   skill (plus any nested sub-skills under it); else bundle every skill under
-   `<dir>/skills/` (or `<dir>`), recursing into nested sub-skills.
+   skill; else bundle every skill under `<dir>/skills/` (or `<dir>`). Skills are
+   flat siblings — directories with a `SKILL.md` are not descended into.
 2. Run `validate --profile all` on every discovered skill first; abort if any
    fails.
 3. Produce a single `<out>/<name>.skill` (default `<out>` = `dist/`), a zip
-   where each skill lives under its own `<skill-name>/` folder. `:` maps to `/`
-   so a sub-skill nests inside its parent (e.g. `skillship:author` →
-   `skillship/author/`). Nested sub-skills are pruned from their parent's file
-   walk so files are never duplicated. No entries sit at the zip root, which
-   Claude upload rejects.
+   where each skill lives under its own flat `<skill-name>/` folder. `:` maps to
+   `-` so sibling skills sit side by side (e.g. `skillship:author` →
+   `skillship-author/`). No entries sit at the zip root, which Claude upload
+   rejects.
 4. The bundle `<name>` is the lone skill's name, or for multiple skills their
    longest common prefix trimmed of a trailing `-`/`:` (e.g. `skillship`,
-   `skillship:author`, `skillship:install` → `skillship`), falling back to the
+   `skillship-author`, `skillship-install` → `skillship`), falling back to the
    project folder name.
 5. In the output *filename*, `:` and `/` are rewritten to `-`, since neither is
    portable in filenames on Windows (and archivers treat a leading `prefix:` as
@@ -145,9 +146,13 @@ unzips the output and asserts every entry sits under a `<skill-name>/` segment.
   to a temp directory, installed from there, then cleaned up. `git` must be on
   PATH.
 - Remote skill resolution: a tree-URL subpath or `@skill-name` filter wins and
-  installs exactly one skill; otherwise `skills/<repoName>/` is tried, then
-  every skill under `skills/`. A bare `owner/repo` with multiple skills installs
-  all of them; use `@skill-name` or a subpath to install just one.
+  installs exactly one skill; otherwise every skill under `skills/` is
+  installed.
+  A bare `owner/repo` installs all skills (a main skill and its sibling
+  sub-skills together); use `@skill-name` or a subpath to install just one.
+- Local skill resolution: a local `source` installs every skill discovered under
+  it (the same flat-sibling discovery `validate`/`package` use), so a project
+  root with several sibling skills installs them all.
 - For filesystem agents (Cursor, Claude Code, etc.), shell out to the ecosystem
   tool rather than copying by hand:
   ```
@@ -242,10 +247,10 @@ skillship/
     AGENTS.md
     README.md
     SKILL.md
-  skills/skillship/         # bundled Agent Skill (the /skillship skill)
-    SKILL.md                # parent skill: delegates to the sub-skills below
-    author/SKILL.md         # skillship:author sub-skill
-    install/SKILL.md        # skillship:install sub-skill
+  skills/                   # bundled Agent Skills (flat siblings)
+    skillship/SKILL.md         # parent skill: delegates to the sibling sub-skills
+    skillship-author/SKILL.md  # skillship-author sub-skill
+    skillship-install/SKILL.md # skillship-install sub-skill
   test/
     fixtures/
     *.test.ts

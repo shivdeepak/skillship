@@ -16,9 +16,9 @@ export interface LoadedSkill {
  * a bare skill name. Resolution order:
  *   1. `<dir>/SKILL.md` — explicit path wins.
  *   2. `skills/<dir>/SKILL.md` — the `skills/` convention, so callers can pass a
- *      bare name without the redundant prefix. Namespaced names map `:` → `/`
- *      for the nested folder (e.g. `skillship:author` → `skills/skillship/author`);
- *      the legacy flat `:` → `-` form is still accepted.
+ *      bare name without the redundant prefix. Namespaced names map `:` → `-`
+ *      for the flat sibling folder (e.g. `skillship:author` →
+ *      `skills/skillship-author`).
  */
 export async function loadSkill(dir: string): Promise<LoadedSkill> {
   const abs = resolve(dir);
@@ -27,7 +27,6 @@ export async function loadSkill(dir: string): Promise<LoadedSkill> {
   if (!resolvedDir) {
     for (const candidate of new Set([
       dir,
-      dir.replaceAll(":", "/"),
       dir.replaceAll(":", "-"),
     ])) {
       const underSkills = resolve(process.cwd(), "skills", candidate);

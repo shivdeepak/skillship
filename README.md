@@ -59,12 +59,11 @@ GitHub/GitLab URL, or an SSH git URL. `validate` and `package` both default to
 `.`: `validate` checks every skill found under it (or its `skills/`) and
 `package` bundles them. A bare skill name resolves to
 `skills/<name>/` by convention, so `validate my-skill` finds
-`skills/my-skill/SKILL.md`. Names may be `:`-namespaced to nest a sub-skill
-under its parent; the `:` maps to a nested folder (e.g. `validate
-skillship:author` resolves `skills/skillship/author/`, and the legacy flat
-`skills/skillship-author/` is still accepted). A repo can hold many skills —
-including nested sub-skills — under `skills/`, and discovery recurses to find
-them all. All commands exit non-zero on failure.
+`skills/my-skill/SKILL.md`. Sub-skills are flat sibling skills sharing a name
+prefix; a `:`-namespaced name maps to a hyphenated sibling folder (e.g.
+`validate skillship:author` resolves `skills/skillship-author/`). A repo can
+hold many sibling skills under `skills/`, and discovery finds them all. All
+commands exit non-zero on failure.
 
 ### validate
 
@@ -106,17 +105,15 @@ skillship package ./skills/my-skill   # bundle just one skill -> dist/my-skill.s
 ```
 
 Discovers every skill under `<dir>` (a lone `SKILL.md`, else each skill under
-`skills/`, recursing into nested sub-skills), runs `validate --profile all` on
-each (aborts if any fails), then bundles them all into a **single**
-`<name>.skill` zip. Each skill lives under its own `<skill-name>/` folder, with
-`:` mapped to `/` so sub-skills nest inside their parent (e.g.
-`skillship:author` → `skillship/author/`); nested sub-skills are pruned from
-their parent's file walk so nothing is duplicated. Claude rejects archives with
-files at the zip root. Excludes `__pycache__/`, `.DS_Store`, `node_modules/`,
-`dist/`, `.git/`.
+`skills/`), runs `validate --profile all` on each (aborts if any fails), then
+bundles them all into a **single** `<name>.skill` zip. Each skill lives under
+its own flat `<skill-name>/` folder, with `:` mapped to `-` so sibling skills
+sit side by side (e.g. `skillship:author` → `skillship-author/`). Claude rejects
+archives with files at the zip root. Excludes `__pycache__/`, `.DS_Store`,
+`node_modules/`, `dist/`, `.git/`.
 
 The bundle `<name>` is the single skill's name, or for multiple skills their
-common prefix (e.g. `skillship`, `skillship:author`, `skillship:install` →
+common prefix (e.g. `skillship`, `skillship-author`, `skillship-install` →
 `skillship`), falling back to the project folder name. Because `:` and `/` are
 not portable in filenames, they are rewritten to `-` in the output filename
 (so a lone `skillship:author` packages to `skillship-author.skill`).
@@ -124,7 +121,7 @@ not portable in filenames, they are rewritten to `-` in the output filename
 ### install
 
 ```bash
-# Local directory (existing behaviour)
+# Local directory — installs every skill discovered under it (all siblings)
 skillship install ./my-skill -a cursor -a claude-code
 
 # GitHub shorthand — clones and installs in one step

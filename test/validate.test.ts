@@ -29,11 +29,11 @@ async function writeSkill(
 }
 
 describe("validate (multi-skill)", () => {
-  it("validates every skill under skills/, including nested sub-skills", async () => {
+  it("validates every skill under skills/, including flat sibling sub-skills", async () => {
     const work = await mkdtemp(join(tmpdir(), "skillship-val-"));
     tmpDirs.push(work);
     await writeSkill(join(work, "skills", "skillship"), "skillship");
-    await writeSkill(join(work, "skills", "skillship", "author"), "skillship:author");
+    await writeSkill(join(work, "skills", "skillship-author"), "skillship-author");
 
     const code = await validateCommand(work, { profile: "all" });
     expect(code).toBe(0);

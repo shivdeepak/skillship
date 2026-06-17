@@ -10,15 +10,19 @@ const EXCLUDED_DIRS = new Set([
 
 /**
  * Recursively collect every directory at or under `root` that contains a
- * `SKILL.md`. Skills may be nested — a parent skill can hold sub-skills under
- * it (e.g. `skillship/author`) — so a directory is recorded as a skill *and*
- * still descended into to find nested sub-skills. Returns sorted paths so a
- * parent sorts before its children.
+ * `SKILL.md`. Each skill is a flat, top-level directory — a directory that
+ * holds a `SKILL.md` is recorded as a skill and NOT descended into, so files
+ * bundled inside a skill are never mistaken for nested sub-skills. Related
+ * skills live side by side (e.g. `skillship`, `skillship-author`). Returns
+ * sorted paths.
  */
 function collectSkillDirs(root: string): string[] {
   const out: string[] = [];
   const walk = (dir: string): void => {
-    if (existsSync(join(dir, "SKILL.md"))) out.push(dir);
+    if (existsSync(join(dir, "SKILL.md"))) {
+      out.push(dir);
+      return;
+    }
     let entries: string[];
     try {
       entries = readdirSync(dir);
@@ -43,12 +47,11 @@ function collectSkillDirs(root: string): string[] {
  * Discover skill directories to operate on, given a project/skill root.
  *
  * Resolution order:
- *   1. `<dir>/SKILL.md` exists → that skill plus any nested sub-skills under it.
+ *   1. `<dir>/SKILL.md` exists → that single skill.
  *   2. `skills/<dir>/SKILL.md` exists (relative to cwd) → the `skills/`
  *      convention, so a bare skill name resolves without the redundant prefix.
- *      Namespaced names map `:` → `/` to match the nested on-disk folder
- *      (e.g. `skillship:author` → `skills/skillship/author`); the legacy flat
- *      `:` → `-` form is still accepted.
+ *      Namespaced names map `:` → `-` to match the flat sibling on-disk folder
+ *      (e.g. `skillship:author` → `skills/skillship-author`).
  *   3. otherwise → every skill (recursively) under `<dir>/skills/`, or under
  *      `<dir>` itself when there is no `skills/` subfolder.
  *
@@ -60,7 +63,6 @@ export function discoverSkillDirs(dir: string): string[] {
 
   for (const candidate of new Set([
     dir,
-    dir.replaceAll(":", "/"),
     dir.replaceAll(":", "-"),
   ])) {
     const underSkills = resolve(process.cwd(), "skills", candidate);
