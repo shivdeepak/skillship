@@ -12,10 +12,13 @@ export function buildSkillsAddArgv(opts: {
   agents: string[];
   global?: boolean;
   copy?: boolean;
+  /** Pass `-y` so `npx skills` does not re-prompt (skillship already asked). */
+  yes?: boolean;
 }): string[] {
   const argv = ["skills", "add", opts.dir];
   if (opts.global) argv.push("--global");
   if (opts.copy) argv.push("--copy");
+  if (opts.yes) argv.push("-y");
   for (const agent of opts.agents) argv.push("-a", agent);
   return argv;
 }

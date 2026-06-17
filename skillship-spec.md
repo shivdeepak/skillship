@@ -63,7 +63,7 @@ flowchart TB
 ```
 skillship validate <dir>    [--profile <p>] [--json]
 skillship package  <dir>    [--out <dir>]
-skillship install  [source] [--agent <a,b>] [--global] [--copy]
+skillship install  [source] [--agent <a,b>] [--global] [--copy] [--yes]
 skillship init     [name]   [--ci] [--snippets] [--new-dir]
 skillship doctor
 ```
@@ -153,14 +153,21 @@ unzips the output and asserts every entry sits under a `<skill-name>/` segment.
 - Local skill resolution: a local `source` installs every skill discovered under
   it (the same flat-sibling discovery `validate`/`package` use), so a project
   root with several sibling skills installs them all.
+- Interactive prompts (only when stdin/stdout are a TTY and `-y`/`--yes` was not
+  passed): when more than one skill will be installed, list them and ask for
+  y/n confirmation (abort cleanly on "no"); if `-g`/`--global` was not supplied, ask
+  global vs project; if `-c`/`--copy` was not supplied, ask copy vs symlink. Explicit
+  flags suppress their prompt; `-y`/`--yes` and non-interactive shells skip all
+  prompts and fall back to provided flags plus defaults (project, symlink).
 - For filesystem agents (Cursor, Claude Code, etc.), shell out to the ecosystem
   tool rather than copying by hand:
   ```
-  npx skills add <dir> [--global] [--copy] -a <agent...>
+  npx skills add <dir> [--global] [--copy] -y -a <agent...>
   ```
 Default agents when `-a` omitted: -a `cursor` -a `claude-code`. Map `--global`
 to
-`npx skills` global flag and `--copy` to its copy flag.
+`npx skills` global flag and `--copy` to its copy flag. Always pass `-y` so
+`npx skills` does not re-prompt (skillship already collected the choices).
 - When installing for `cursor`, also deploy the skill's Cursor extras if
   present:
   copy `cursor/rules/*.mdc` into `~/.cursor/rules/` (global) or `.cursor/rules/`

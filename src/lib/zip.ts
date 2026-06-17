@@ -52,7 +52,7 @@ function zipFolder(name: string): string {
  * drive), so both are rewritten to `-` (e.g. `skillship:author` →
  * `skillship-author.skill`).
  */
-function fileSafeName(name: string): string {
+export function fileSafeName(name: string): string {
   return name.replace(/[:/]/g, "-");
 }
 

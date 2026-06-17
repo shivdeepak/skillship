@@ -48,6 +48,26 @@ describe("install (local multi-skill)", () => {
     expect(installedDirs).toContain(join(work, "skills", "skillship-author"));
     expect(installedDirs).toContain(join(work, "skills", "skillship-install"));
   });
+
+  it("always passes -y to npx skills and forwards --global/--copy flags", async () => {
+    runMock.mockClear();
+    const work = await mkdtemp(join(tmpdir(), "skillship-inst-"));
+    tmpDirs.push(work);
+    await writeSkill(join(work, "skills", "solo"), "solo");
+
+    const code = await installCommand(work, {
+      agent: "claude-code",
+      global: true,
+      copy: true,
+    });
+    expect(code).toBe(0);
+    expect(runMock).toHaveBeenCalledTimes(1);
+
+    const argv = runMock.mock.calls[0][1] as string[];
+    expect(argv).toContain("-y");
+    expect(argv).toContain("--global");
+    expect(argv).toContain("--copy");
+  });
 });
 
 describe("buildSkillsAddArgv", () => {
@@ -90,5 +110,11 @@ describe("buildSkillsAddArgv", () => {
       "add",
       "/x/demo",
     ]);
+  });
+
+  it("adds -y when yes is set", () => {
+    expect(
+      buildSkillsAddArgv({ dir: "/x/demo", agents: ["cursor"], yes: true }),
+    ).toEqual(["skills", "add", "/x/demo", "-y", "-a", "cursor"]);
   });
 });

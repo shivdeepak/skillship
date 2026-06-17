@@ -1,9 +1,9 @@
 ---
-name: skillship-install
+name: skillship:install
 description: Install a remote Agent Skill via the skillship CLI. Use when installing a skill from a GitHub repo, GitLab URL, or SSH URL into Cursor, Claude Code, or Claude Web.
 ---
 
-# skillship-install
+# skillship:install
 
 Drive the `skillship install` CLI command to install a remote Agent Skill. Run
 the CLI for the user; do not ask them to run commands manually.
@@ -50,8 +50,18 @@ Ask the user where to install (use AskQuestion). Targets:
 npx skillship@latest install <source> -a cursor -a claude-code
 ```
 
-- `--global` installs for all projects instead of the current one.
-- `--copy` copies files instead of symlinking.
+When a source resolves to multiple skills (e.g. a repo with sibling sub-skills),
+`install` lists them and asks for confirmation, then prompts for global vs
+project scope and copy vs symlink — unless those are pre-decided by flags:
+
+- `-g`/`--global` installs for all projects instead of the current one (skips the
+  scope prompt).
+- `-c`/`--copy` copies files instead of symlinking (skips the copy prompt).
+- `-y`/`--yes` skips every prompt and uses the provided flags plus defaults
+  (project scope, symlink). Useful for non-interactive runs.
+
+If the user has already told you the scope and copy preference, pass the
+matching flags so no prompt is shown.
 
 **Upload-only surfaces** (e.g. Claude Web / Cowork) — package the skill
 locally first, then guide the user to upload:

@@ -2,6 +2,8 @@ import { loadSkill } from "../lib/load.js";
 import { discoverSkillDirs } from "../lib/discover.js";
 import { buildSkillsAddArgv, isAvailable, run } from "../lib/exec.js";
 import { fetchRemoteSkill, isRemoteRef } from "../lib/remote.js";
+import { choice, confirm, isInteractive } from "../lib/prompt.js";
+import { fileSafeName } from "../lib/zip.js";
 import {
   copyFileSync,
   existsSync,
@@ -10,17 +12,30 @@ import {
   readFileSync,
   writeFileSync,
 } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { homedir } from "node:os";
 
 export interface InstallOptions {
   agent?: string | string[];
   global?: boolean;
   copy?: boolean;
+  /** Skip interactive prompts and accept defaults / provided flags. */
+  yes?: boolean;
 }
 
 const DEFAULT_AGENTS = ["cursor", "claude-code"];
 const UPLOAD_ONLY = new Set(["claude-web", "claude-cowork"]);
+
+/** Normalize the repeatable/comma-separated `--agent` option into a list. */
+function resolveAgents(agent: InstallOptions["agent"]): string[] {
+  const provided =
+    agent && (Array.isArray(agent) ? agent.length > 0 : true)
+      ? Array.isArray(agent)
+        ? agent.flatMap((a) => a.split(",")).map((a) => a.trim()).filter(Boolean)
+        : agent.split(",").map((a) => a.trim()).filter(Boolean)
+      : [];
+  return provided.length > 0 ? provided : DEFAULT_AGENTS;
+}
 
 export async function installCommand(
   dir: string,
@@ -54,12 +69,66 @@ export async function installCommand(
   }
 
   try {
-    if (dirs.length > 1) {
-      process.stdout.write(`Installing ${dirs.length} skills:\n`);
+    const requested = resolveAgents(options.agent);
+    const hasFilesystem = requested.some((a) => !UPLOAD_ONLY.has(a));
+    const assumeYes = options.yes ?? false;
+    const interactive = !assumeYes && isInteractive();
+
+    // Resolve global vs copy once for the whole batch, prompting when the
+    // corresponding flag was not supplied on the command line.
+    let global = options.global;
+    let copy = options.copy;
+
+    if (hasFilesystem) {
+      // Confirm a multi-skill install up front, listing what will be installed.
+      if (dirs.length > 1) {
+        process.stdout.write(
+          `${dirs.length} skills will be installed:\n` +
+            dirs.map((d) => `  - ${basename(d)}\n`).join(""),
+        );
+        if (interactive) {
+          const ok = await confirm("Install all of these skills?", true);
+          if (!ok) {
+            process.stdout.write("Aborted. No skills were installed.\n");
+            return 0;
+          }
+        }
+      }
+
+      if (global === undefined) {
+        global = interactive
+          ? await choice<boolean>(
+              "Install globally (all projects) or in this project?",
+              [
+                { key: "g", label: "global", value: true },
+                { key: "p", label: "project", value: false },
+              ],
+              "p",
+            )
+          : false;
+      }
+
+      if (copy === undefined) {
+        copy = interactive
+          ? await choice<boolean>(
+              "Copy the files or symlink them?",
+              [
+                { key: "c", label: "copy", value: true },
+                { key: "s", label: "symlink", value: false },
+              ],
+              "s",
+            )
+          : false;
+      }
     }
+
     let lastCode = 0;
     for (const d of dirs) {
-      const code = await installOne(d, options);
+      const code = await installOne(d, {
+        agent: options.agent,
+        global,
+        copy,
+      });
       if (code !== 0) lastCode = code;
     }
     return lastCode;
@@ -82,11 +151,7 @@ async function installOne(
     return 1;
   }
 
-  const requested = options.agent && (Array.isArray(options.agent) ? options.agent.length > 0 : true)
-      ? (Array.isArray(options.agent)
-          ? options.agent.flatMap((a) => a.split(",")).map((a) => a.trim()).filter(Boolean)
-          : options.agent.split(",").map((a) => a.trim()).filter(Boolean))
-      : DEFAULT_AGENTS;
+  const requested = resolveAgents(options.agent);
 
   const uploadOnly = requested.filter((a) => UPLOAD_ONLY.has(a));
   const filesystem = requested.filter((a) => !UPLOAD_ONLY.has(a));
@@ -109,6 +174,9 @@ async function installOne(
     agents: filesystem,
     global: options.global,
     copy: options.copy,
+    // skillship has already gathered the answers; tell `npx skills` not to
+    // re-prompt for the same choices.
+    yes: true,
   });
   process.stdout.write(`Running: npx ${argv.join(" ")}\n`);
   const code = await run("npx", argv);
@@ -203,7 +271,7 @@ function printUploadInstructions(agents: string[], name: string): void {
     `\nThe following surfaces are upload-only (no filesystem install): ${agents.join(", ")}\n`,
   );
   process.stdout.write(
-    `Run \`skillship package .\` then upload \`dist/${name}.skill\`.\n`,
+    `Run \`skillship package .\` then upload \`dist/${fileSafeName(name)}.skill\`.\n`,
   );
   if (agents.includes("claude-web")) {
     process.stdout.write(

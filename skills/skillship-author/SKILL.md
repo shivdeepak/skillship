@@ -1,9 +1,9 @@
 ---
-name: skillship-author
+name: skillship:author
 description: Author and publish an Agent Skill with the skillship CLI. Use when creating a new SKILL.md from scratch, converting an existing skill to portable, or publishing with CI.
 ---
 
-# skillship-author
+# skillship:author
 
 Drive the `skillship` CLI to author and publish a portable Agent Skill. Run the
 CLI for the user; do not ask them to run commands manually.

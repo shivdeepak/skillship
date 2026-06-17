@@ -150,9 +150,23 @@ locates the `SKILL.md`, installs from there, then cleans up. `git` must be
 available on `PATH` — run `skillship doctor` to check.
 
 For filesystem agents, shells out to `npx skills add <dir> [--global] [--copy]
--a <agent> [-a <agent>]`. Default agents are `cursor` and `claude-code`.
-For upload-only surfaces (`claude-web`, `claude-cowork`) it prints upload
-instructions instead.
+-y -a <agent> [-a <agent>]`. Default agents are `cursor` and `claude-code`.
+`-y` is always passed so `npx skills` does not re-prompt — skillship gathers the
+answers itself. For upload-only surfaces (`claude-web`, `claude-cowork`) it
+prints upload instructions instead.
+
+When run in an interactive terminal, `install` prompts before acting:
+
+- If more than one skill will be installed, it lists them and asks for
+  confirmation (e.g. `owner/repo` resolving to several sibling skills).
+- If `-g`/`--global` was not passed, it asks whether to install globally (all
+  projects) or in the current project.
+- If `-c`/`--copy` was not passed, it asks whether to copy the files or symlink them.
+
+Pass `-y`/`--yes` to skip every prompt and use the provided flags plus defaults
+(project scope, symlink). In a non-interactive shell (CI, pipes) prompts are
+skipped automatically. Explicit `--global`/`--copy` flags always suppress their
+respective prompt.
 
 When installing for **Cursor**, two additional steps run automatically if the
 corresponding files exist inside the skill directory:
