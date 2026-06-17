@@ -68,7 +68,9 @@ skillship init     [name]   [--ci] [--snippets] [--new-dir]
 skillship doctor
 ```
 
-- `<dir>` defaults to `.` and must contain `SKILL.md`.
+- `<dir>` defaults to `.`. `validate` and `package` discover skills under it: a
+  lone `SKILL.md`, a bare name under `skills/`, else every skill under
+  `skills/`. `validate` checks each; `package` bundles them.
 - `install`'s `[source]` is a local path (default `.`) **or** a remote ref
   (`owner/repo`, `owner/repo@skill-name`, a GitHub/GitLab URL, or any git URL);
   remote refs are `git clone --depth 1`'d to a temp dir, installed, then

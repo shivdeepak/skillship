@@ -1,45 +1,11 @@
 import { basename, join, resolve } from "node:path";
-import { existsSync, readdirSync, statSync } from "node:fs";
 import { loadSkill } from "../lib/load.js";
+import { discoverSkillDirs } from "../lib/discover.js";
 import { validateProfile } from "../lib/profiles.js";
 import { packSkills, type BundleSkill } from "../lib/zip.js";
 
 export interface PackageOptions {
   out?: string;
-}
-
-/**
- * Discover the skill directories to bundle, given a project/skill root.
- *
- * Resolution order:
- *   1. `<root>/SKILL.md` exists → the root itself is a single skill.
- *   2. `<root>/skills/` exists → bundle every immediate subdir with a SKILL.md.
- *   3. otherwise → bundle every immediate subdir of `<root>` with a SKILL.md.
- */
-function discoverSkillDirs(root: string): string[] {
-  if (existsSync(join(root, "SKILL.md"))) return [root];
-
-  const skillsRoot = existsSync(join(root, "skills"))
-    ? join(root, "skills")
-    : root;
-
-  let entries: string[];
-  try {
-    entries = readdirSync(skillsRoot);
-  } catch {
-    return [];
-  }
-
-  return entries
-    .map((entry) => join(skillsRoot, entry))
-    .filter((path) => {
-      try {
-        return statSync(path).isDirectory() && existsSync(join(path, "SKILL.md"));
-      } catch {
-        return false;
-      }
-    })
-    .sort();
 }
 
 /**

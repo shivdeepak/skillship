@@ -18,8 +18,8 @@ program
 
 program
   .command("validate")
-  .description("Validate a SKILL.md against per-surface profiles")
-  .argument("[dir]", "skill directory", ".")
+  .description("Validate SKILL.md(s) against per-surface profiles (all skills under <dir> by default)")
+  .argument("[dir]", "project or skill directory", ".")
   .option("--profile <p>", "spec | cursor | claude-web | claude-cowork | all", "all")
   .option("--json", "machine-readable output")
   .action(async (dir, opts) => {

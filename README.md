@@ -55,9 +55,9 @@ skillship doctor
 
 `<source>` for `install` is a local path (default `.`) **or** any remote ref
 supported by `npx skills add`: `owner/repo`, `owner/repo@skill-name`, a full
-GitHub/GitLab URL, or an SSH git URL. For `validate`, `<dir>` defaults to `.`
-and must contain a `SKILL.md`; `package` defaults to `.` and bundles every skill
-found under it (or its `skills/`). A bare skill name resolves to
+GitHub/GitLab URL, or an SSH git URL. `validate` and `package` both default to
+`.`: `validate` checks every skill found under it (or its `skills/`) and
+`package` bundles them. A bare skill name resolves to
 `skills/<name>/` by convention, so `validate my-skill` finds
 `skills/my-skill/SKILL.md`. Names may be `:`-namespaced (e.g.
 `validate skillship:author` resolves `skills/skillship:author/`), and a repo can
@@ -66,9 +66,17 @@ failure.
 
 ### validate
 
-Parses the `SKILL.md` YAML frontmatter (`name`, `description`, optional
-`license`, `metadata`, `allowed-tools`) and body, then applies checks per
-profile:
+```bash
+skillship validate                    # validate every skill under ./skills/
+skillship validate skillship:author   # validate just one (bare-name convention)
+skillship validate ./skills/my-skill  # validate an explicit skill dir
+```
+
+Discovers skills the same way `package` does (a lone `SKILL.md`, a bare name
+under `skills/`, else every skill under `skills/`), validating each and exiting
+non-zero if any fails. For each skill it parses the `SKILL.md` YAML frontmatter
+(`name`, `description`, optional `license`, `metadata`, `allowed-tools`) and
+body, then applies checks per profile:
 
 | Check | spec | cursor | claude-web | claude-cowork |
 | --- | --- | --- | --- | --- |

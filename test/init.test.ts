@@ -63,7 +63,7 @@ describe("init", () => {
       join(root, ".github/workflows/validate.yml"),
       "utf8",
     );
-    expect(validateYml).toContain("npx skillship validate demo");
+    expect(validateYml).toContain("npx skillship validate --profile all");
   });
 
   it("omits CI and snippets when flags are off", async () => {
